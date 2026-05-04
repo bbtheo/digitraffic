@@ -4,16 +4,35 @@
 \alias{dt_stations}
 \title{List all LAM/TMS measurement stations}
 \usage{
-dt_stations(name = NULL)
+dt_stations(
+  name = NULL,
+  road_number = NULL,
+  municipality = NULL,
+  province = NULL,
+  bbox = NULL
+)
 }
 \arguments{
-\item{name}{\code{NULL} (default) or a character string used as a
-case-insensitive regular expression to filter stations by name.
-Station names typically encode the road and location, e.g.
-\code{"vt1_Espoo_Hirvisuo"}.}
+\item{name}{\code{NULL} or a case-insensitive regular expression matched against
+station names, e.g. \code{"Espoo"} or \code{"^vt1_"}.}
+
+\item{road_number}{\code{NULL} or a positive integer road number, e.g. \code{7} for
+valtatie 7.  Parsed from the station name — fast, no extra API calls.}
+
+\item{municipality}{\code{NULL} or a character string matched
+case-insensitively against the municipality name, e.g. \code{"Espoo"}.
+Requires the detailed station cache.}
+
+\item{province}{\code{NULL} or a character string matched case-insensitively
+against the province name, e.g. \code{"Uusimaa"}.  Requires the detailed
+station cache.}
+
+\item{bbox}{\code{NULL} or a length-4 numeric vector
+\code{c(lon_min, lat_min, lon_max, lat_max)} in WGS-84 degrees.  Filters
+stations whose coordinates fall inside the bounding box.}
 }
 \value{
-A tibble with one row per station and columns:
+A tibble with one row per matching station and columns:
 \describe{
 \item{id}{Integer. Internal API station identifier.}
 \item{tms_number}{Integer. TMS system number (used for history CSV).}
@@ -21,7 +40,7 @@ A tibble with one row per station and columns:
 \item{longitude}{Double. WGS-84 longitude.}
 \item{latitude}{Double. WGS-84 latitude.}
 \item{elevation}{Double. Elevation in metres.}
-\item{bearing}{Integer. Road bearing in degrees (0–360).}
+\item{bearing}{Integer. Road bearing in degrees (0-360).}
 \item{collection_status}{Character. \code{"GATHERING"} or \code{"REMOVED_TEMPORARILY"}.}
 \item{state}{Character. Operational state, e.g. \code{"OK"}.}
 \item{data_updated_time}{POSIXct (UTC). Time the record was last updated.}
@@ -29,18 +48,39 @@ A tibble with one row per station and columns:
 }
 \description{
 Fetches metadata for all automatic traffic measurement (LAM/TMS) stations
-from the Digitraffic API.  Results are cached for 5 minutes within the
-current R session; call \code{\link[=dt_cache_clear]{dt_cache_clear()}} to force a fresh fetch.
+from the Digitraffic API.  Basic results (name, coordinates, status) are
+cached for 5 minutes per R session.
+}
+\details{
+Filtering by \code{road_number}, \code{municipality}, \code{province}, or \code{bbox} requires
+extended station metadata.  This is served from a bundled snapshot baked
+into the package, or from a user-refreshed disk cache
+(\code{tools::R_user_dir("digitraffic", "cache")}).  If the network list of
+stations has changed since the cache was built, a warning is emitted with
+instructions to call \code{\link[=dt_stations_load_details]{dt_stations_load_details()}}.
 }
 \examples{
 \dontrun{
 # All stations
 dt_stations()
 
-# Stations whose name contains "Espoo"
+# By name (regex supported)
 dt_stations(name = "Espoo")
-
-# Stations on valtatie 1 (road E18)
 dt_stations(name = "^vt1_")
+
+# By road number
+dt_stations(road_number = 7)
+
+# By municipality
+dt_stations(municipality = "Espoo")
+
+# By province
+dt_stations(province = "Uusimaa")
+
+# By bounding box (Helsinki metropolitan area)
+dt_stations(bbox = c(24.5, 60.1, 25.2, 60.4))
+
+# Combine filters
+dt_stations(road_number = 1, municipality = "Espoo")
 }
 }

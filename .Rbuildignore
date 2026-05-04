@@ -8,3 +8,4 @@
 ^pkgdown$
 ^scratchpad$
 ^\.claude$
+^data-raw$

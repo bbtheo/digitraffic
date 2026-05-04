@@ -17,8 +17,17 @@ dt_base_request <- function() {
   httr2::request(.dt_base_url) |>
     httr2::req_user_agent(ua) |>
     httr2::req_retry(
-      max_tries = 3,
-      is_transient = \(resp) httr2::resp_status(resp) %in% c(429L, 500L, 503L)
+      max_tries    = 5,
+      is_transient = \(resp) httr2::resp_status(resp) %in% c(429L, 500L, 503L),
+      # For 429 respect the Retry-After header; fall back to 60 s.
+      # For other transient errors use exponential back-off (httr2 default).
+      after = function(resp) {
+        if (httr2::resp_status(resp) != 429L) return(NULL)
+        ra <- suppressWarnings(
+          as.numeric(httr2::resp_header(resp, "retry-after"))
+        )
+        if (!is.na(ra) && ra > 0) ra else 60
+      }
     ) |>
     httr2::req_throttle(rate = 10 / 60)
 }

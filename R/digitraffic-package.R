@@ -9,5 +9,6 @@
 #' @importFrom dplyr filter bind_rows left_join rename
 #' @importFrom readr read_delim
 #' @importFrom utils packageVersion
+#' @importFrom tools R_user_dir
 ## usethis namespace: end
 NULL

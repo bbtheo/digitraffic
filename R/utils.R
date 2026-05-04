@@ -68,6 +68,41 @@ check_history_date <- function(date, call = rlang::caller_env()) {
 
 # String helpers ----------------------------------------------------------
 
+# Spatial helpers ---------------------------------------------------------
+
+# Validate a bbox argument: must be a length-4 numeric c(lon_min, lat_min, lon_max, lat_max).
+check_bbox <- function(bbox, arg = rlang::caller_arg(bbox), call = rlang::caller_env()) {
+  if (!is.numeric(bbox) || length(bbox) != 4L || anyNA(bbox)) {
+    cli::cli_abort(
+      "{.arg {arg}} must be a length-4 numeric vector {.code c(lon_min, lat_min, lon_max, lat_max)}.",
+      call = call
+    )
+  }
+  if (bbox[1] >= bbox[3] || bbox[2] >= bbox[4]) {
+    cli::cli_abort(
+      c(
+        "{.arg {arg}} min values must be less than max values.",
+        "i" = "Expected {.code c(lon_min, lat_min, lon_max, lat_max)}, got {.val {bbox}}."
+      ),
+      call = call
+    )
+  }
+  invisible(bbox)
+}
+
+# Parse the road number from a station name string.
+# Station names follow the convention "<type><number>_<location>", e.g.:
+#   "vt7_Rita"          -> 7   (valtatie)
+#   "kt51_Kehä"   -> 51  (kantatie)
+#   "st140_Sipoo"       -> 140 (seututie)
+#   "mt123_Muu"         -> 123 (maantie)
+# Returns NA_integer_ for names that don't match the pattern.
+parse_road_number_from_name <- function(name) {
+  m <- regmatches(name, regexpr("^[a-z]+([0-9]+)_", name, perl = TRUE))
+  if (length(m) == 0L || !nzchar(m)) return(NA_integer_)
+  as.integer(sub("^[a-z]+([0-9]+)_.*", "\\1", m))
+}
+
 # Convert camelCase or PascalCase strings to snake_case.
 #
 # Examples:

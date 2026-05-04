@@ -1,0 +1,249 @@
+---
+title: "Getting started with digitraffic"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with digitraffic}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+## What is Digitraffic?
+
+[Digitraffic](https://www.digitraffic.fi/) is an open API maintained by
+Finntraffic that provides real-time and historical traffic data from Finland's
+road network. The data comes from over 450 **LAM** (_Liikenteen Automaattinen
+Mittaus_ / Automatic Traffic Measurement) stations — electromagnetic induction
+loops embedded in the road surface that detect every passing vehicle.
+
+Each LAM station records:
+
+- **Speed** (km/h)
+- **Vehicle length** (metres) — used for classification
+- **Direction and lane**
+- **Headway** — time gap to the previous vehicle
+- **Vehicle classification** — 7 categories from cars to HCT trucks
+
+The `digitraffic` R package wraps these API endpoints and returns all data as
+tidy tibbles, ready for analysis with dplyr and visualisation with ggplot2.
+
+## Installation
+
+```{r install}
+# install.packages("pak")
+pak::pak("theo-blauberg/digitraffic")
+```
+
+## Loading the package
+
+```{r setup}
+library(digitraffic)
+library(dplyr)
+```
+
+## Discovering stations
+
+The first thing you'll want to do is find stations of interest. `dt_stations()`
+returns a tibble of all LAM stations with their coordinates, bearing, and
+operational status:
+```{r stations}
+stations <- dt_stations()
+stations
+```
+
+The result is cached for 5 minutes so repeated calls are instant.
+`dt_stations()` supports five filter parameters — see
+`vignette("station-filtering")` for the full guide.  Quick examples:
+
+```{r stations-filter}
+# By name (case-insensitive regex)
+dt_stations(name = "Espoo")
+
+# By road number (parsed from name, no extra API calls)
+dt_stations(road_number = 1)
+
+# By geographic bounding box
+dt_stations(bbox = c(24.5, 60.1, 25.2, 60.4))
+
+# By municipality or province (uses bundled metadata cache)
+dt_stations(municipality = "Espoo")
+dt_stations(province = "Uusimaa")
+
+# Filters combine — road 4 stations in Pirkanmaa
+dt_stations(road_number = 4, province = "Pirkanmaa")
+```
+
+### Detailed station metadata
+
+For a single station, `dt_station()` returns an extended set of 32 fields
+including municipality, province, road number, road section, free-flow
+speeds, and multilingual names:
+
+```{r station-detail}
+detail <- dt_station(23001)
+detail
+
+# Key fields
+detail |>
+  select(name, municipality, province, road_number,
+         free_flow_speed1, free_flow_speed2)
+```
+
+### Mapping stations with sf
+
+If you have the `sf` package installed, you can convert the stations tibble
+to a spatial object for mapping:
+
+```{r sf-stations}
+library(sf)
+
+stations_sf <- dt_stations() |>
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+
+# Filter to active stations only
+active <- stations_sf |>
+  filter(collection_status == "GATHERING")
+
+plot(active["bearing"], pch = 20, main = "LAM stations coloured by bearing")
+```
+
+## Real-time sensor data
+
+`dt_station_data()` fetches the current sensor readings for one station.
+Data is updated approximately every minute:
+
+```{r sensor-data}
+data <- dt_station_data(23001)
+data
+```
+
+Each row is a single sensor measurement. The `name` column contains a
+structured Finnish name encoding the measurement type, interval, and
+direction. For example:
+
+| Sensor name | Meaning |
+|---|---|
+| `OHITUKSET_5MIN_KIINTEA_SUUNTA1` | Vehicle count, 5-min fixed interval, direction 1 |
+| `KESKINOPEUS_60MIN_KIINTEA_SUUNTA1` | Average speed, 60-min fixed interval, direction 1 |
+| `OHITUKSET_5MIN_LIUKUVA_SUUNTA2_KAISTA1` | Vehicle count, 5-min sliding, direction 2, lane 1 |
+
+### Filtering to speed readings
+
+```{r speed-readings}
+data |>
+  filter(unit == "km/h") |>
+  select(name, value, unit, time_window_start, time_window_end)
+```
+
+### Filtering to volume readings
+
+```{r volume-readings}
+data |>
+  filter(unit == "kpl/h") |>
+  select(name, value, unit, time_window_start, time_window_end)
+```
+
+### All stations at once
+
+`dt_stations_data()` fetches sensor data for every station in one request.
+The response is several MB, so it takes a few seconds:
+
+```{r all-stations-data}
+all_data <- dt_stations_data()
+
+# How many stations have data?
+n_distinct(all_data$station_id)
+
+# Average 60-min speed across all stations, direction 1
+all_data |>
+  filter(name == "KESKINOPEUS_60MIN_KIINTEA_SUUNTA1") |>
+  summarise(
+    n_stations    = n(),
+    mean_speed    = mean(value, na.rm = TRUE),
+    median_speed  = median(value, na.rm = TRUE),
+    min_speed     = min(value, na.rm = TRUE),
+    max_speed     = max(value, na.rm = TRUE)
+  )
+```
+
+## Understanding sensor types
+
+There are 76 different sensor types. `dt_sensors()` returns the full
+catalogue with descriptions:
+
+```{r sensors}
+sensors <- dt_sensors()
+sensors
+
+# Speed sensors
+sensors |> filter(unit == "km/h")
+
+# Volume sensors
+sensors |> filter(unit == "kpl/h")
+
+# Status / special sensors
+sensors |> filter(unit == "***")
+```
+
+You can join this catalogue to sensor data to enrich the output:
+
+```{r join-sensors}
+dt_station_data(23001) |>
+  left_join(
+    sensors |> select(sensor_id = id, description_fi, direction),
+    by = "sensor_id"
+  )
+```
+
+## Sensor constants (calibration values)
+
+Each station has calibration constants that define reference values for that
+specific road segment:
+
+```{r constants}
+# All constants
+consts <- dt_sensor_constants()
+consts
+
+# Constants for one station
+dt_sensor_constants(id = 23001)
+```
+
+The constants include:
+
+| Name | Meaning |
+|---|---|
+| `VVAPAAS1` | Free-flow speed (km/h), direction 1 |
+| `VVAPAAS2` | Free-flow speed (km/h), direction 2 |
+| `MS1` | Maximum hourly capacity (vehicles/h), direction 1 |
+| `MS2` | Maximum hourly capacity (vehicles/h), direction 2 |
+| `Tien_suunta` | Road bearing in degrees (0-360) |
+
+Many stations have **seasonal variants** with different summer (Apr-Oct) and
+winter (Nov-Mar) values:
+
+```{r seasonal-constants}
+dt_sensor_constants(id = 20002) |>
+  filter(grepl("VVAPAAS", name)) |>
+  select(name, value, valid_from, valid_to)
+#> # A tibble: 4 x 4
+#>   name     value valid_from valid_to
+#>   <chr>    <dbl> <chr>      <chr>
+#> 1 VVAPAAS1   105 04-01      10-31
+#> 2 VVAPAAS1   100 11-01      03-31
+#> 3 VVAPAAS2   105 04-01      10-31
+#> 4 VVAPAAS2   100 11-01      03-31
+```
+
+## Next steps
+
+- For filtering stations by road, municipality, province, and bounding box, see `vignette("station-filtering")`
+- For historical per-vehicle data, see `vignette("historical-data")`
+- For the full function reference, see the [package documentation site](https://theo-blauberg.github.io/digitraffic/)

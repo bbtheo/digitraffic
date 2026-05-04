@@ -43,6 +43,10 @@ articles:
     contents:
       - digitraffic
 
+  - title: Station Discovery
+    contents:
+      - station-filtering
+
   - title: Advanced Usage
     contents:
       - historical-data
