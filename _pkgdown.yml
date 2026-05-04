@@ -1,0 +1,48 @@
+url: https://theo-maon.github.io/digitraffic/
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left: [intro, reference, articles]
+    right: [search, github]
+
+reference:
+  - title: Station Metadata
+    desc: Discover and inspect LAM measurement stations
+    contents:
+      - dt_stations
+      - dt_station
+
+  - title: Sensor Data
+    desc: Real-time traffic measurements
+    contents:
+      - dt_station_data
+      - dt_stations_data
+      - dt_sensors
+
+  - title: Sensor Constants
+    desc: Station calibration and reference values
+    contents:
+      - dt_sensor_constants
+
+  - title: Historical Data
+    desc: Raw historical vehicle-level observations
+    contents:
+      - dt_history_raw
+
+  - title: Utilities
+    desc: Helper functions
+    contents:
+      - dt_vehicle_classes
+      - dt_cache_clear
+
+articles:
+  - title: Getting Started
+    contents:
+      - digitraffic
+
+  - title: Advanced Usage
+    contents:
+      - historical-data
