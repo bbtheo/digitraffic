@@ -90,6 +90,184 @@ parse_station_detail <- function(data) {
   )
 }
 
+# Sensor data (real-time) -------------------------------------------------
+
+# Flatten one station's sensorValues list into a tibble.
+# `data` is the full parsed response for one station.
+parse_sensor_values <- function(data) {
+  values <- data[["sensorValues"]]
+  station_id  <- as.integer(data[["id"]] %||% NA_integer_)
+  tms_number  <- as.integer(data[["tmsNumber"]] %||% NA_integer_)
+  updated     <- parse_dt(data[["dataUpdatedTime"]])
+
+  if (length(values) == 0L) {
+    return(tibble::tibble(
+      station_id        = integer(),
+      tms_number        = integer(),
+      data_updated_time = as.POSIXct(character()),
+      sensor_id         = integer(),
+      name              = character(),
+      short_name        = character(),
+      value             = double(),
+      unit              = character(),
+      measured_time     = as.POSIXct(character()),
+      time_window_start = as.POSIXct(character()),
+      time_window_end   = as.POSIXct(character())
+    ))
+  }
+
+  rows <- lapply(values, function(v) {
+    tibble::tibble(
+      station_id        = station_id,
+      tms_number        = tms_number,
+      data_updated_time = updated,
+      sensor_id         = as.integer(v[["id"]] %||% NA_integer_),
+      name              = v[["name"]] %||% NA_character_,
+      short_name        = v[["shortName"]] %||% NA_character_,
+      value             = as.double(v[["value"]] %||% NA_real_),
+      unit              = v[["unit"]] %||% NA_character_,
+      measured_time     = parse_dt(v[["measuredTime"]]),
+      time_window_start = parse_dt(v[["timeWindowStart"]]),
+      time_window_end   = parse_dt(v[["timeWindowEnd"]])
+    )
+  })
+  dplyr::bind_rows(rows)
+}
+
+# Flatten all stations' sensor data (bulk endpoint) into a single tibble.
+parse_all_stations_data <- function(data) {
+  stations <- data[["stations"]]
+  if (length(stations) == 0L) return(parse_sensor_values(list(sensorValues = list())))
+  dplyr::bind_rows(lapply(stations, parse_sensor_values))
+}
+
+# Sensor metadata ---------------------------------------------------------
+
+# Flatten the sensors metadata response into a tibble.
+parse_sensors <- function(data) {
+  sensors <- data[["sensors"]]
+  if (length(sensors) == 0L) {
+    return(tibble::tibble(
+      id             = integer(),
+      name           = character(),
+      short_name     = character(),
+      unit           = character(),
+      direction      = character(),
+      description_fi = character(),
+      description_en = character()
+    ))
+  }
+
+  rows <- lapply(sensors, function(s) {
+    desc <- s[["descriptions"]] %||% list()
+    tibble::tibble(
+      id             = as.integer(s[["id"]] %||% NA_integer_),
+      name           = s[["name"]] %||% NA_character_,
+      short_name     = s[["shortName"]] %||% NA_character_,
+      unit           = s[["unit"]] %||% NA_character_,
+      direction      = s[["direction"]] %||% NA_character_,
+      description_fi = desc[["fi"]] %||% NA_character_,
+      description_en = desc[["en"]] %||% NA_character_
+    )
+  })
+  dplyr::bind_rows(rows)
+}
+
+# Sensor constants --------------------------------------------------------
+
+# Flatten the sensor-constants response into a tidy tibble.
+parse_sensor_constants <- function(data) {
+  stations <- data[["stations"]]
+  if (length(stations) == 0L) {
+    return(tibble::tibble(
+      station_id        = integer(),
+      data_updated_time = as.POSIXct(character()),
+      name              = character(),
+      value             = double(),
+      valid_from        = character(),
+      valid_to          = character()
+    ))
+  }
+
+  rows <- lapply(stations, function(st) {
+    sid     <- as.integer(st[["id"]] %||% NA_integer_)
+    updated <- parse_dt(st[["dataUpdatedTime"]])
+    consts  <- st[["sensorConstantValues"]] %||% list()
+    if (length(consts) == 0L) {
+      return(tibble::tibble(
+        station_id        = sid,
+        data_updated_time = updated,
+        name              = NA_character_,
+        value             = NA_real_,
+        valid_from        = NA_character_,
+        valid_to          = NA_character_
+      ))
+    }
+    dplyr::bind_rows(lapply(consts, function(c) {
+      tibble::tibble(
+        station_id        = sid,
+        data_updated_time = updated,
+        name              = c[["name"]]  %||% NA_character_,
+        value             = as.double(c[["value"]] %||% NA_real_),
+        valid_from        = c[["validFrom"]] %||% NA_character_,
+        valid_to          = c[["validTo"]]   %||% NA_character_
+      )
+    }))
+  })
+  dplyr::bind_rows(rows)
+}
+
+# Historical raw CSV ------------------------------------------------------
+
+# Column names for the LAM raw CSV format (semicolon-delimited, no header).
+.lam_csv_col_names <- c(
+  "station_id", "year_short", "day_of_year",
+  "hour", "minute", "second", "centisecond",
+  "vehicle_length_m", "lane", "direction",
+  "vehicle_class", "speed_kmh", "quality_flag",
+  "interval_ms", "time_in_loop_ms"
+)
+
+.lam_csv_col_types <- "iiiiiiididiiiii"
+
+# Parse a LAM raw CSV text string into a tibble.
+# Adds a full `datetime` (POSIXct UTC) and `vehicle_class_label` column.
+parse_history_csv <- function(text, date) {
+  if (!nzchar(trimws(text))) {
+    cli::cli_abort(
+      c("The CSV response is empty.",
+        "i" = "No data may be available for this station and date.")
+    )
+  }
+
+  df <- readr::read_delim(
+    I(text),
+    delim           = ";",
+    col_names       = .lam_csv_col_names,
+    col_types       = .lam_csv_col_types,
+    show_col_types  = FALSE,
+    progress        = FALSE
+  )
+
+  # Build a proper datetime from year + day-of-year + time components.
+  # The CSV year_short is 2-digit; reconstruct the full year from the date arg.
+  full_year <- as.integer(format(date, "%Y"))
+  df$datetime <- as.POSIXct(
+    sprintf(
+      "%04d-%03d %02d:%02d:%02d.%02d",
+      full_year, df$day_of_year,
+      df$hour, df$minute, df$second, df$centisecond
+    ),
+    format = "%Y-%j %H:%M:%OS",
+    tz = "Europe/Helsinki"
+  )
+
+  # Join vehicle class labels.
+  vc <- dt_vehicle_classes()[, c("vehicle_class", "label_en")]
+  df <- dplyr::left_join(df, vc, by = "vehicle_class")
+  dplyr::rename(df, vehicle_class_label = "label_en")
+}
+
 # Shared helpers ----------------------------------------------------------
 
 # Parse an ISO 8601 UTC timestamp string to POSIXct, returning NA on failure.

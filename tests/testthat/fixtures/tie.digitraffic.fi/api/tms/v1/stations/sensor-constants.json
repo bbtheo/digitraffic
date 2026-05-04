@@ -1,0 +1,29 @@
+{
+  "dataUpdatedTime": "2024-06-01T00:00:00Z",
+  "stations": [
+    {
+      "id": 20002,
+      "dataUpdatedTime": "2024-06-01T00:00:00Z",
+      "sensorConstantValues": [
+        { "name": "MS1",       "value": 4000, "validFrom": "01-01", "validTo": "12-31" },
+        { "name": "MS2",       "value": 3800, "validFrom": "01-01", "validTo": "12-31" },
+        { "name": "VVAPAAS1",  "value": 105,  "validFrom": "04-01", "validTo": "10-31" },
+        { "name": "VVAPAAS1",  "value": 100,  "validFrom": "11-01", "validTo": "03-31" },
+        { "name": "VVAPAAS2",  "value": 105,  "validFrom": "04-01", "validTo": "10-31" },
+        { "name": "VVAPAAS2",  "value": 100,  "validFrom": "11-01", "validTo": "03-31" },
+        { "name": "Tien_suunta", "value": 298, "validFrom": "01-01", "validTo": "12-31" }
+      ]
+    },
+    {
+      "id": 23001,
+      "dataUpdatedTime": "2024-06-01T00:00:00Z",
+      "sensorConstantValues": [
+        { "name": "MS1",       "value": 3200, "validFrom": "01-01", "validTo": "12-31" },
+        { "name": "MS2",       "value": 3000, "validFrom": "01-01", "validTo": "12-31" },
+        { "name": "VVAPAAS1",  "value": 105,  "validFrom": "01-01", "validTo": "12-31" },
+        { "name": "VVAPAAS2",  "value": 95,   "validFrom": "01-01", "validTo": "12-31" },
+        { "name": "Tien_suunta", "value": 60, "validFrom": "01-01", "validTo": "12-31" }
+      ]
+    }
+  ]
+}

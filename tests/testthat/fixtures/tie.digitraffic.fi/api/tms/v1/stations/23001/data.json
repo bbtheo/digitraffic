@@ -1,0 +1,40 @@
+{
+  "id": 23001,
+  "tmsNumber": 1,
+  "dataUpdatedTime": "2024-06-01T12:00:00Z",
+  "sensorValues": [
+    {
+      "id": 5016,
+      "stationId": 23001,
+      "name": "OHITUKSET_5MIN_KIINTEA_SUUNTA1",
+      "shortName": "kpl/h1",
+      "timeWindowStart": "2024-06-01T11:55:00Z",
+      "timeWindowEnd": "2024-06-01T12:00:00Z",
+      "measuredTime": "2024-06-01T12:00:00Z",
+      "unit": "kpl/h",
+      "value": 216.0
+    },
+    {
+      "id": 5057,
+      "stationId": 23001,
+      "name": "KESKINOPEUS_60MIN_KIINTEA_SUUNTA1",
+      "shortName": "km/h1",
+      "timeWindowStart": "2024-06-01T11:00:00Z",
+      "timeWindowEnd": "2024-06-01T12:00:00Z",
+      "measuredTime": "2024-06-01T12:00:00Z",
+      "unit": "km/h",
+      "value": 107.0
+    },
+    {
+      "id": 60000,
+      "stationId": 23001,
+      "name": "TILA",
+      "shortName": "tila",
+      "timeWindowStart": null,
+      "timeWindowEnd": null,
+      "measuredTime": "2024-06-01T12:00:00Z",
+      "unit": "***",
+      "value": 0.0
+    }
+  ]
+}

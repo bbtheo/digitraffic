@@ -1,0 +1,41 @@
+{
+  "dataUpdatedTime": "2024-06-01T12:00:00Z",
+  "stations": [
+    {
+      "id": 20002,
+      "tmsNumber": 20002,
+      "dataUpdatedTime": "2024-06-01T12:00:00Z",
+      "sensorValues": [
+        {
+          "id": 5016,
+          "stationId": 20002,
+          "name": "OHITUKSET_5MIN_KIINTEA_SUUNTA1",
+          "shortName": "kpl/h1",
+          "timeWindowStart": "2024-06-01T11:55:00Z",
+          "timeWindowEnd": "2024-06-01T12:00:00Z",
+          "measuredTime": "2024-06-01T12:00:00Z",
+          "unit": "kpl/h",
+          "value": 312.0
+        }
+      ]
+    },
+    {
+      "id": 23001,
+      "tmsNumber": 1,
+      "dataUpdatedTime": "2024-06-01T12:00:00Z",
+      "sensorValues": [
+        {
+          "id": 5057,
+          "stationId": 23001,
+          "name": "KESKINOPEUS_60MIN_KIINTEA_SUUNTA1",
+          "shortName": "km/h1",
+          "timeWindowStart": "2024-06-01T11:00:00Z",
+          "timeWindowEnd": "2024-06-01T12:00:00Z",
+          "measuredTime": "2024-06-01T12:00:00Z",
+          "unit": "km/h",
+          "value": 110.0
+        }
+      ]
+    }
+  ]
+}

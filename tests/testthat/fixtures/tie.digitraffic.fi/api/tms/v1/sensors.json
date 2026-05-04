@@ -1,0 +1,57 @@
+{
+  "dataUpdatedTime": "2024-06-01T00:00:00Z",
+  "dataLastCheckedTime": "2024-06-01T00:00:00Z",
+  "sensors": [
+    {
+      "id": 5016,
+      "name": "OHITUKSET_5MIN_KIINTEA_SUUNTA1",
+      "shortName": "kpl/h1",
+      "unit": "kpl/h",
+      "accuracy": null,
+      "sensorValueDescriptions": [],
+      "direction": "INCREASING_DIRECTION",
+      "description": "Ajoneuvomäärä suunta 1 (5 min)",
+      "descriptions": {
+        "fi": "Ajoneuvomäärä suunta 1 (5 min)",
+        "sv": null,
+        "en": null
+      },
+      "presentationNames": { "fi": null, "sv": null, "en": null }
+    },
+    {
+      "id": 5057,
+      "name": "KESKINOPEUS_60MIN_KIINTEA_SUUNTA1",
+      "shortName": "km/h1",
+      "unit": "km/h",
+      "accuracy": null,
+      "sensorValueDescriptions": [],
+      "direction": "INCREASING_DIRECTION",
+      "description": "Keskinopeus suunta 1 (60 min)",
+      "descriptions": {
+        "fi": "Keskinopeus suunta 1 (60 min)",
+        "sv": null,
+        "en": "Average speed direction 1 (60 min)"
+      },
+      "presentationNames": { "fi": null, "sv": null, "en": null }
+    },
+    {
+      "id": 60000,
+      "name": "TILA",
+      "shortName": "tila",
+      "unit": "***",
+      "accuracy": null,
+      "sensorValueDescriptions": [
+        {"value": 0, "description": "OK"},
+        {"value": 1, "description": "Suspected malfunction"}
+      ],
+      "direction": "UNKNOWN",
+      "description": "Laitteen tila",
+      "descriptions": {
+        "fi": "Laitteen tila",
+        "sv": null,
+        "en": "Device status"
+      },
+      "presentationNames": { "fi": null, "sv": null, "en": null }
+    }
+  ]
+}
