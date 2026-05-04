@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "dataUpdatedTime": "2024-06-01T10:00:00Z",
+  "features": [
+    {
+      "type": "Feature",
+      "id": 20002,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [24.637997, 60.220898, 30.0]
+      },
+      "properties": {
+        "id": 20002,
+        "tmsNumber": 20002,
+        "name": "vt1_Espoo_Hirvisuo",
+        "bearing": 298,
+        "collectionStatus": "GATHERING",
+        "dataUpdatedTime": "2024-05-15T08:00:00Z",
+        "state": "OK"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 23001,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [25.689529, 60.417002, 0.0]
+      },
+      "properties": {
+        "id": 23001,
+        "tmsNumber": 1,
+        "name": "vt7_Rita",
+        "bearing": 60,
+        "collectionStatus": "GATHERING",
+        "dataUpdatedTime": "2024-05-20T12:00:00Z",
+        "state": "OK"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 23002,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [24.512345, 60.123456, 15.0]
+      },
+      "properties": {
+        "id": 23002,
+        "tmsNumber": 2,
+        "name": "vt3_Helsinki_Kannelmaki",
+        "bearing": 180,
+        "collectionStatus": "REMOVED_TEMPORARILY",
+        "dataUpdatedTime": "2024-04-10T06:00:00Z",
+        "state": null
+      }
+    }
+  ]
+}

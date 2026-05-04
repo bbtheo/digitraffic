@@ -17,11 +17,11 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Theo Maon \email{ma.oon.theo@gmail.com}
+\strong{Maintainer}: Theo Blauberg \email{theo.blauberg@outlook.com} (\href{https://orcid.org/0000-0003-1780-0365}{ORCID}) [copyright holder]
 
 Authors:
 \itemize{
-  \item Theo Maon \email{ma.oon.theo@gmail.com}
+  \item Theo Blauberg \email{theo.blauberg@outlook.com} (\href{https://orcid.org/0000-0003-1780-0365}{ORCID}) [copyright holder]
 }
 
 }

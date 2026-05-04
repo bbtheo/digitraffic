@@ -1,0 +1,51 @@
+{
+  "type": "Feature",
+  "id": 23001,
+  "geometry": {
+    "type": "Point",
+    "coordinates": [25.689529, 60.417002, 0.0]
+  },
+  "properties": {
+    "id": 23001,
+    "tmsNumber": 1,
+    "name": "vt7_Rita",
+    "direction1Municipality": "Kotka",
+    "direction1MunicipalityCode": 285,
+    "direction2Municipality": "Helsinki",
+    "direction2MunicipalityCode": 91,
+    "stationType": "DSL_6",
+    "calculatorDeviceType": null,
+    "sensors": [5158, 5161, 5164, 5167],
+    "freeFlowSpeed1": 105.0,
+    "freeFlowSpeed2": 95.0,
+    "bearing": 60,
+    "annualMaintenanceTime": null,
+    "collectionInterval": 0,
+    "collectionStatus": "GATHERING",
+    "country": null,
+    "dataUpdatedTime": "2024-05-20T12:00:00Z",
+    "liviId": "Livi968639",
+    "municipality": "Porvoo",
+    "municipalityCode": 638,
+    "names": {
+      "fi": "Valtatie 7 Rita, Porvoo",
+      "sv": "Riksväg 7 Rita, Borgå",
+      "en": "National road 7 Rita, Porvoo"
+    },
+    "province": "Uusimaa",
+    "provinceCode": 1,
+    "purpose": "reaaliaika",
+    "repairMaintenanceTime": null,
+    "roadAddress": {
+      "roadNumber": 7,
+      "roadSection": 10,
+      "distanceFromRoadSectionStart": 950,
+      "carriageway": "DUAL_CARRIAGEWAY_RIGHT_IN_INCREASING_DIRECTION",
+      "side": "LEFT",
+      "contractArea": "",
+      "contractAreaCode": 360
+    },
+    "startTime": "2001-11-07T00:00:00Z",
+    "state": "OK"
+  }
+}
