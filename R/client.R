@@ -6,9 +6,10 @@
 
 # Build the base httr2 request with shared settings:
 #   - User-Agent identifying the package + version
-#   - Accept JSON by default
-#   - Retry up to 3 times on transient failures (429, 503, network errors)
-#   - Throttle to 60 requests per minute (Digitraffic's default limit per IP)
+#   - 30-second timeout so hung connections don't block the session forever
+#   - Retry up to 5 times on transient failures (429, 500, 503, network errors)
+#     with Retry-After header support for 429 and exponential back-off otherwise
+#   - Throttle to 10 requests per minute to be a polite API client
 dt_base_request <- function() {
   ua <- paste0(
     "digitraffic-r/", utils::packageVersion("digitraffic"),
@@ -16,11 +17,13 @@ dt_base_request <- function() {
   )
   httr2::request(.dt_base_url) |>
     httr2::req_user_agent(ua) |>
+    httr2::req_timeout(30) |>
     httr2::req_retry(
       max_tries    = 5,
       is_transient = \(resp) httr2::resp_status(resp) %in% c(429L, 500L, 503L),
       # For 429 respect the Retry-After header; fall back to 60 s.
-      # For other transient errors use exponential back-off (httr2 default).
+      # Returning NULL for other transient errors lets httr2 use its default
+      # exponential back-off.
       after = function(resp) {
         if (httr2::resp_status(resp) != 429L) return(NULL)
         ra <- suppressWarnings(
@@ -29,7 +32,7 @@ dt_base_request <- function() {
         if (!is.na(ra) && ra > 0) ra else 60
       }
     ) |>
-    httr2::req_throttle(rate = 60 / 60)
+    httr2::req_throttle(rate = 10 / 60)
 }
 
 # Perform a request and translate HTTP errors into informative cli messages.

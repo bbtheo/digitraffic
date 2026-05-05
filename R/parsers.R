@@ -271,7 +271,13 @@ parse_history_csv <- function(text, date) {
 # Shared helpers ----------------------------------------------------------
 
 # Parse an ISO 8601 UTC timestamp string to POSIXct, returning NA on failure.
+# Handles trailing "Z" (most common from Digitraffic) as well as numeric
+# UTC offsets (+HH:MM / -HH:MM) and bare datetime strings.  All results are
+# returned in UTC regardless of any stated offset.
 parse_dt <- function(x) {
-  if (is.null(x) || is.na(x)) return(as.POSIXct(NA))
-  as.POSIXct(x, format = "%Y-%m-%dT%H:%M:%OSZ", tz = "UTC")
+  if (is.null(x) || is.na(x)) return(as.POSIXct(NA_character_, tz = "UTC"))
+  # Strip trailing Z (case-insensitive) or a numeric UTC offset (e.g. +03:00).
+  x <- sub("[Zz]$", "", x)
+  x <- sub("[+-][0-9]{2}:[0-9]{2}$", "", x)
+  as.POSIXct(x, format = "%Y-%m-%dT%H:%M:%OS", tz = "UTC")
 }

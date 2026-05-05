@@ -35,8 +35,7 @@ check_date <- function(date, arg = rlang::caller_arg(date), call = rlang::caller
 #   #> list(year_short = "24", day_number = 15)
 date_to_lam_parts <- function(date) {
   check_date(date)
-  year_full  <- as.integer(format(date, "%Y"))
-  year_short <- format(date, "%y")          # "24"
+  year_short <- format(date, "%y")              # "24"
   day_number <- as.integer(format(date, "%j"))  # 1–366
   list(year_short = year_short, day_number = day_number)
 }
@@ -54,19 +53,21 @@ check_history_date <- function(date, call = rlang::caller_env()) {
       call = call
     )
   }
-  if (date >= Sys.Date()) {
+  # Raw files are published the following day at 08:00-09:00 EET (Europe/Helsinki).
+  # Compare against today in Finnish time so the check is correct regardless of
+  # the user's system timezone.
+  today_hki <- as.Date(Sys.time(), tz = "Europe/Helsinki")
+  if (date >= today_hki) {
     cli::cli_abort(
       c(
         "Raw history data is published the following day between 08:00-09:00 EET.",
-        "x" = "Requested date {.val {date}} is today or in the future."
+        "x" = "Requested date {.val {date}} is today or in the future (Finnish time)."
       ),
       call = call
     )
   }
   invisible(date)
 }
-
-# String helpers ----------------------------------------------------------
 
 # Spatial helpers ---------------------------------------------------------
 
@@ -87,6 +88,17 @@ check_bbox <- function(bbox, arg = rlang::caller_arg(bbox), call = rlang::caller
       call = call
     )
   }
+  # Sanity-check that values are plausible WGS-84 coordinates.
+  if (bbox[1] < -180 || bbox[3] > 180 || bbox[2] < -90 || bbox[4] > 90) {
+    cli::cli_abort(
+      c(
+        "{.arg {arg}} contains out-of-range WGS-84 coordinates.",
+        "i" = "Longitude must be in [-180, 180] and latitude in [-90, 90].",
+        "i" = "Got {.val {bbox}}."
+      ),
+      call = call
+    )
+  }
   invisible(bbox)
 }
 
@@ -101,18 +113,4 @@ parse_road_number_from_name <- function(name) {
   m <- regmatches(name, regexpr("^[a-z]+([0-9]+)_", name, perl = TRUE))
   if (length(m) == 0L || !nzchar(m)) return(NA_integer_)
   as.integer(sub("^[a-z]+([0-9]+)_.*", "\\1", m))
-}
-
-# Convert camelCase or PascalCase strings to snake_case.
-#
-# Examples:
-#   to_snake("collectionStatus") #> "collection_status"
-#   to_snake("tmsNumber")        #> "tms_number"
-#   to_snake("roadNumber")       #> "road_number"
-to_snake <- function(x) {
-  # Insert underscore before sequences of uppercase letters followed by lowercase
-  x <- gsub("([A-Z]+)([A-Z][a-z])", "\\1_\\2", x)
-  # Insert underscore between lowercase/digit and uppercase
-  x <- gsub("([a-z0-9])([A-Z])", "\\1_\\2", x)
-  tolower(x)
 }

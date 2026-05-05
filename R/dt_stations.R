@@ -121,7 +121,9 @@ dt_stations <- function(name         = NULL,
 
   if (needs_detail) {
     detailed <- dt_load_detailed_cache()
-    dt_check_detailed_integrity(detailed)
+    # Pass the already-fetched `stations` tibble so the integrity check does
+    # not make a redundant API call.
+    dt_check_detailed_integrity(detailed, stations)
 
     # Join only the extra columns we need, matching on id.
     extra    <- detailed[, c("id", "municipality", "province")]

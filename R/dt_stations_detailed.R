@@ -25,10 +25,10 @@ dt_load_detailed_cache <- function() {
   stations_detailed_cache   # bundled in R/sysdata.rda
 }
 
-# Compare cached station IDs to the live bulk list.
+# Compare cached station IDs to a live bulk station tibble (already fetched
+# by the caller).  Accepts `current` directly so no extra API call is made.
 # Emits a warning (not an error) when they differ so filtering still works.
-dt_check_detailed_integrity <- function(detailed) {
-  current    <- dt_stations()
+dt_check_detailed_integrity <- function(detailed, current) {
   current_ids <- sort(current$id)
   cached_ids  <- sort(detailed$id)
 
@@ -78,14 +78,10 @@ dt_stations_load_details <- function(max_active = 10L) {
 
   cli::cli_inform("Fetching detailed metadata for {n} station{?s}...")
 
-  ua <- paste0(
-    "digitraffic-r/", utils::packageVersion("digitraffic"),
-    " (https://github.com/bbtheo/digitraffic)"
-  )
-
+  # Use dt_base_request() so each request inherits retry, throttle, and the
+  # shared User-Agent — the same resilience as all other client calls.
   reqs <- lapply(ids, function(id) {
-    httr2::request(.dt_base_url) |>
-      httr2::req_user_agent(ua) |>
+    dt_base_request() |>
       httr2::req_url_path(paste0("/api/tms/v1/stations/", id)) |>
       httr2::req_headers(Accept = "application/json")
   })
@@ -97,6 +93,13 @@ dt_stations_load_details <- function(max_active = 10L) {
     progress   = TRUE
   )
 
+  n_failed <- sum(vapply(resps, inherits, logical(1L), "error"))
+  if (n_failed > 0L) {
+    cli::cli_warn(
+      "Failed to fetch details for {n_failed} of {n} station{?s}. Results may be incomplete."
+    )
+  }
+
   rows <- lapply(resps, function(resp) {
     if (inherits(resp, "error")) return(NULL)
     tryCatch(
@@ -106,6 +109,16 @@ dt_stations_load_details <- function(max_active = 10L) {
   })
   rows    <- Filter(Negate(is.null), rows)
   details <- dplyr::bind_rows(rows)
+
+  # Guard: do not overwrite a good cache with an empty result (e.g. total
+  # network failure).  Warn and return early instead.
+  if (nrow(details) == 0L) {
+    cli::cli_warn(c(
+      "No station details could be fetched — cache not updated.",
+      "i" = "Check your internet connection and try again."
+    ))
+    return(invisible(NULL))
+  }
 
   cache_dir <- tools::R_user_dir("digitraffic", which = "cache")
   dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)

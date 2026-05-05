@@ -99,20 +99,3 @@ test_that("check_history_date() rejects future dates", {
   )
 })
 
-# to_snake() --------------------------------------------------------------
-
-test_that("to_snake() converts camelCase to snake_case", {
-  expect_equal(to_snake("collectionStatus"), "collection_status")
-  expect_equal(to_snake("tmsNumber"),        "tms_number")
-  expect_equal(to_snake("roadNumber"),       "road_number")
-  expect_equal(to_snake("dataUpdatedTime"),  "data_updated_time")
-})
-
-test_that("to_snake() handles already-lowercase strings", {
-  expect_equal(to_snake("name"), "name")
-  expect_equal(to_snake("id"),   "id")
-})
-
-test_that("to_snake() handles consecutive uppercase (acronyms)", {
-  expect_equal(to_snake("tmsID"), "tms_id")
-})

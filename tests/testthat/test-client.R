@@ -51,15 +51,16 @@ test_that("dt_perform() raises digitraffic_error_not_found on 404", {
 })
 
 test_that("dt_perform() raises digitraffic_error_http on 500", {
-  # 500 is in the transient list so it will be retried up to 3 times;
-  # supply enough mock responses to exhaust the retries.
+  # 500 is transient, so it is retried.  max_tries = 5 means 5 total attempts
+  # (1 initial + 4 retries), so we need exactly 5 mock responses to exhaust
+  # all tries and trigger the error.
   mock_500 <- httr2::response(
     status_code = 500L,
     headers = list(`Content-Type` = "application/json"),
     body = charToRaw('{"message":"Internal server error"}')
   )
   httr2::with_mocked_responses(
-    list(mock_500, mock_500, mock_500),
+    list(mock_500, mock_500, mock_500, mock_500, mock_500),
     {
       req <- dt_base_request() |>
         httr2::req_url_path("/api/tms/v1/stations")
