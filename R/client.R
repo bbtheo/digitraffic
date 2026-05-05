@@ -29,7 +29,7 @@ dt_base_request <- function() {
         ra <- suppressWarnings(
           as.numeric(httr2::resp_header(resp, "retry-after"))
         )
-        if (!is.na(ra) && ra > 0) ra else 60
+        if (!is.na(ra) && ra > 0) ra else 5
       }
     ) |>
     httr2::req_throttle(rate =  1/60)
