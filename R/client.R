@@ -32,7 +32,7 @@ dt_base_request <- function() {
         if (!is.na(ra) && ra > 0) ra else 60
       }
     ) |>
-    httr2::req_throttle(rate = 10 / 60)
+    httr2::req_throttle(rate =  1/60)
 }
 
 # Perform a request and translate HTTP errors into informative cli messages.
