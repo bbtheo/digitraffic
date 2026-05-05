@@ -17,7 +17,7 @@ message("Found ", length(ids), " stations.")
 # Build one request per station — no throttle so parallelism can run freely.
 ua <- paste0(
   "digitraffic-r/", packageVersion("digitraffic"),
-  " (https://github.com/theo-blauberg/digitraffic)"
+  " (https://github.com/bbtheo/digitraffic)"
 )
 
 reqs <- lapply(ids, function(id) {

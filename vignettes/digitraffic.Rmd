@@ -38,7 +38,7 @@ tidy tibbles, ready for analysis with dplyr and visualisation with ggplot2.
 
 ```{r install}
 # install.packages("pak")
-pak::pak("theo-blauberg/digitraffic")
+pak::pak("bbtheo/digitraffic")
 ```
 
 ## Loading the package
@@ -246,4 +246,4 @@ dt_sensor_constants(id = 20002) |>
 
 - For filtering stations by road, municipality, province, and bounding box, see `vignette("station-filtering")`
 - For historical per-vehicle data, see `vignette("historical-data")`
-- For the full function reference, see the [package documentation site](https://theo-blauberg.github.io/digitraffic/)
+- For the full function reference, see the [package documentation site](https://bbtheo.github.io/digitraffic/)

@@ -1,8 +1,8 @@
 # digitraffic <img src="man/figures/logo.png" align="right" height="139" alt="" />
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/theo-blauberg/digitraffic/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/theo-blauberg/digitraffic/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/theo-blauberg/digitraffic/graph/badge.svg)](https://app.codecov.io/gh/theo-blauberg/digitraffic)
+[![R-CMD-check](https://github.com/bbtheo/digitraffic/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/bbtheo/digitraffic/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/bbtheo/digitraffic/graph/badge.svg)](https://app.codecov.io/gh/bbtheo/digitraffic)
 <!-- badges: end -->
 
 **digitraffic** is an R client for the [Finntraffic Digitraffic](https://www.digitraffic.fi/) open API, giving you tidy access to Finland's automatic traffic measurement (LAM/TMS) network — over 450 road stations measuring vehicle speeds, volumes, and classifications in real time.
@@ -15,7 +15,7 @@ Install the development version from GitHub:
 
 ```r
 # install.packages("pak")
-pak::pak("theo-blauberg/digitraffic")
+pak::pak("bbtheo/digitraffic")
 ```
 
 ## Quick start

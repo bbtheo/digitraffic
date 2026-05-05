@@ -80,7 +80,7 @@ dt_stations_load_details <- function(max_active = 10L) {
 
   ua <- paste0(
     "digitraffic-r/", utils::packageVersion("digitraffic"),
-    " (https://github.com/theo-blauberg/digitraffic)"
+    " (https://github.com/bbtheo/digitraffic)"
   )
 
   reqs <- lapply(ids, function(id) {

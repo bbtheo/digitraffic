@@ -11,8 +11,8 @@ Provides functions to access traffic measurement data from the Finnish Transport
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/theo-maon/digitraffic}
-  \item Report bugs at \url{https://github.com/theo-maon/digitraffic/issues}
+  \item \url{https://github.com/bbtheo/digitraffic}
+  \item Report bugs at \url{https://github.com/bbtheo/digitraffic/issues}
 }
 
 }

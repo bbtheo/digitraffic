@@ -12,7 +12,7 @@
 dt_base_request <- function() {
   ua <- paste0(
     "digitraffic-r/", utils::packageVersion("digitraffic"),
-    " (https://github.com/theo-blauberg/digitraffic)"
+    " (https://github.com/bbtheo/digitraffic)"
   )
   httr2::request(.dt_base_url) |>
     httr2::req_user_agent(ua) |>
