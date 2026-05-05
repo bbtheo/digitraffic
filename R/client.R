@@ -8,7 +8,7 @@
 #   - User-Agent identifying the package + version
 #   - Accept JSON by default
 #   - Retry up to 3 times on transient failures (429, 503, network errors)
-#   - Throttle to 10 requests per minute to be a polite API client
+#   - Throttle to 60 requests per minute (Digitraffic's default limit per IP)
 dt_base_request <- function() {
   ua <- paste0(
     "digitraffic-r/", utils::packageVersion("digitraffic"),
@@ -29,7 +29,7 @@ dt_base_request <- function() {
         if (!is.na(ra) && ra > 0) ra else 60
       }
     ) |>
-    httr2::req_throttle(rate = 10 / 60)
+    httr2::req_throttle(rate = 60 / 60)
 }
 
 # Perform a request and translate HTTP errors into informative cli messages.

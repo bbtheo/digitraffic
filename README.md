@@ -138,7 +138,7 @@ stations <- dt_stations() |>
 
 - **Base URL:** `https://tie.digitraffic.fi`
 - **Authentication:** None required (open data)
-- **Rate limiting:** The package throttles to 10 requests/minute and retries transient errors (429, 500, 503) automatically
+- **Rate limiting:** The package throttles to 60 requests/minute (Digitraffic's default limit) and retries transient errors (429, 500, 503) automatically
 - **Caching:** Station metadata is cached for 5 minutes per R session; call `dt_cache_clear()` to refresh
 - **Historical data:** Available from December 2021 onwards; published the next day at 08:00–09:00 EET
 

@@ -251,7 +251,7 @@ week_data |>
 Each day's CSV file is a separate API request, typically 1-5 MB. For large
 date ranges:
 
-- Consider spacing requests to stay under the 10 req/min throttle
+- Consider spacing requests to stay under the 60 req/min throttle
 - Store intermediate results locally with `saveRDS()` / `readRDS()`
 - For bulk analysis (months or years), consider using the pre-computed
   statistical reports at `https://tie.digitraffic.fi/ui/tms/history/`
