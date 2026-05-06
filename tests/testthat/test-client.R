@@ -19,6 +19,21 @@ test_that("dt_base_request() sets a digitraffic User-Agent", {
   expect_match(req$options$useragent, "^digitraffic-r/")
 })
 
+test_that("dt_base_request() defaults to a 120-second timeout", {
+  withr::with_options(list(digitraffic.timeout = NULL), {
+    req <- dt_base_request()
+    # httr2 stores req_timeout() in req$options$timeout_ms (milliseconds)
+    expect_equal(req$options$timeout_ms, 120 * 1000)
+  })
+})
+
+test_that("dt_base_request() respects the digitraffic.timeout option", {
+  withr::with_options(list(digitraffic.timeout = 60), {
+    req <- dt_base_request()
+    expect_equal(req$options$timeout_ms, 60 * 1000)
+  })
+})
+
 # dt_perform() — success --------------------------------------------------
 
 test_that("dt_perform() returns the response on 200 OK", {
@@ -65,6 +80,39 @@ test_that("dt_perform() raises digitraffic_error_http on 500", {
       req <- dt_base_request() |>
         httr2::req_url_path("/api/tms/v1/stations")
       expect_error(dt_perform(req), class = "digitraffic_error_http")
+    }
+  )
+})
+
+test_that("dt_perform() retries on httr2_failure and succeeds", {
+  # Simulate a timeout on the first attempt, then a clean 200 on the retry.
+  mock_timeout <- function(req) {
+    rlang::abort("timed out", class = c("httr2_failure", "error"))
+  }
+  mock_ok <- httr2::response(
+    status_code = 200L,
+    headers = list(`Content-Type` = "application/json"),
+    body = charToRaw('{"ok":true}')
+  )
+  httr2::with_mocked_responses(list(mock_timeout, mock_ok), {
+    req <- dt_base_request() |>
+      httr2::req_url_path("/api/tms/v1/stations")
+    resp <- dt_perform(req)
+    expect_equal(httr2::resp_status(resp), 200L)
+  })
+})
+
+test_that("dt_perform() raises digitraffic_error_network when all retries fail with httr2_failure", {
+  # Exhaust all 5 attempts with a simulated network error.
+  mock_timeout <- function(req) {
+    rlang::abort("timed out", class = c("httr2_failure", "error"))
+  }
+  httr2::with_mocked_responses(
+    list(mock_timeout, mock_timeout, mock_timeout, mock_timeout, mock_timeout),
+    {
+      req <- dt_base_request() |>
+        httr2::req_url_path("/api/tms/v1/stations")
+      expect_error(dt_perform(req), class = "digitraffic_error_network")
     }
   )
 })

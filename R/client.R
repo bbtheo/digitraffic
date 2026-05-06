@@ -6,8 +6,10 @@
 
 # Build the base httr2 request with shared settings:
 #   - User-Agent identifying the package + version
-#   - 30-second timeout so hung connections don't block the session forever
-#   - Retry up to 5 times on transient failures (429, 500, 503, network errors)
+#   - Timeout controlled by getOption("digitraffic.timeout", 120): 30 s is
+#     fine for small JSON endpoints but multi-MB CSV files need more headroom.
+#   - Retry up to 5 times on transient failures (429, 500, 503) AND on
+#     network-level errors (timeouts, connection resets — httr2_failure),
 #     with Retry-After header support for 429 and exponential back-off otherwise
 #   - Throttle to 10 requests per minute to be a polite API client
 dt_base_request <- function() {
@@ -17,10 +19,11 @@ dt_base_request <- function() {
   )
   httr2::request(.dt_base_url) |>
     httr2::req_user_agent(ua) |>
-    httr2::req_timeout(30) |>
+    httr2::req_timeout(getOption("digitraffic.timeout", 120)) |>
     httr2::req_retry(
-      max_tries    = 5,
-      is_transient = \(resp) httr2::resp_status(resp) %in% c(429L, 500L, 503L),
+      max_tries          = 5,
+      retry_on_failure   = TRUE,
+      is_transient       = \(resp) httr2::resp_status(resp) %in% c(429L, 500L, 503L),
       # For 429 respect the Retry-After header; fall back to 60 s.
       # Returning NULL for other transient errors lets httr2 use its default
       # exponential back-off.
@@ -29,7 +32,7 @@ dt_base_request <- function() {
         ra <- suppressWarnings(
           as.numeric(httr2::resp_header(resp, "retry-after"))
         )
-        if (!is.na(ra) && ra > 0) ra else 60
+        if (length(ra) == 1L && !is.na(ra) && ra > 0) ra else 60
       }
     ) |>
     httr2::req_throttle(rate = 10 / 60)
