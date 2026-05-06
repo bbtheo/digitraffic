@@ -12,6 +12,10 @@ A tibble with columns:
 \item{vehicle_class}{Integer. Class code (1-9).}
 \item{label_en}{Character. English label.}
 \item{label_fi}{Character. Finnish label (UTF-8).}
+\item{category_en}{Character. Broad vehicle category in English:
+\code{"Car"} (classes 1, 6, 7), \code{"Truck"} (classes 2, 4, 5, 9),
+\code{"Bus"} (class 3), \code{"Motorcycle"} (class 8).}
+\item{category_fi}{Character. Broad vehicle category in Finnish (UTF-8).}
 }
 }
 \description{

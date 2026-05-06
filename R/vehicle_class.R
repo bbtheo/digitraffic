@@ -9,6 +9,10 @@
 #'     \item{vehicle_class}{Integer. Class code (1-9).}
 #'     \item{label_en}{Character. English label.}
 #'     \item{label_fi}{Character. Finnish label (UTF-8).}
+#'     \item{category_en}{Character. Broad vehicle category in English:
+#'       `"Car"` (classes 1, 6, 7), `"Truck"` (classes 2, 4, 5, 9),
+#'       `"Bus"` (class 3), `"Motorcycle"` (class 8).}
+#'     \item{category_fi}{Character. Broad vehicle category in Finnish (UTF-8).}
 #'   }
 #'
 #' @export
@@ -38,6 +42,28 @@ dt_vehicle_classes <- function() {
       "Henkil\u00f6auto ja asuntovaunu tai -auto",
       "Moottoripy\u00f6r\u00e4 tai mopo",
       "HCT-ajoneuvoyhdistelm\u00e4"
+    ),
+    category_en = c(
+      "Car",        # 1  Car / van
+      "Truck",      # 2  Truck (no trailer)
+      "Bus",        # 3  Bus
+      "Truck",      # 4  Truck + semitrailer
+      "Truck",      # 5  Truck + full trailer
+      "Car",        # 6  Car + trailer
+      "Car",        # 7  Car + caravan / motorhome
+      "Motorcycle", # 8  Motorcycle / moped
+      "Truck"       # 9  High Capacity Truck
+    ),
+    category_fi = c(
+      "Henkil\u00f6auto", # 1
+      "Kuorma-auto",      # 2
+      "Linja-auto",       # 3
+      "Kuorma-auto",      # 4
+      "Kuorma-auto",      # 5
+      "Henkil\u00f6auto", # 6
+      "Henkil\u00f6auto", # 7
+      "Moottoripy\u00f6r\u00e4", # 8
+      "Kuorma-auto"       # 9
     )
   )
 }

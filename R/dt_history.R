@@ -28,6 +28,7 @@
 #'     \item{time_in_loop_ms}{Integer. Time vehicle spent over the loop (ms).}
 #'     \item{datetime}{POSIXct (Europe/Helsinki). Full passage timestamp.}
 #'     \item{vehicle_class_label}{Character. English label for the vehicle class.}
+#'     \item{vehicle_class_category}{Character. Broad category: "Car", "Truck", "Bus", or "Motorcycle".}
 #'   }
 #'
 #' @export

@@ -262,10 +262,13 @@ parse_history_csv <- function(text, date) {
     tz = "Europe/Helsinki"
   )
 
-  # Join vehicle class labels.
-  vc <- dt_vehicle_classes()[, c("vehicle_class", "label_en")]
+  # Join vehicle class labels and categories.
+  vc <- dt_vehicle_classes()[, c("vehicle_class", "label_en", "category_en")]
   df <- dplyr::left_join(df, vc, by = "vehicle_class")
-  dplyr::rename(df, vehicle_class_label = "label_en")
+  dplyr::rename(df,
+    vehicle_class_label    = "label_en",
+    vehicle_class_category = "category_en"
+  )
 }
 
 # Shared helpers ----------------------------------------------------------

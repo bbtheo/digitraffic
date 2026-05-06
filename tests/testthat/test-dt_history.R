@@ -12,7 +12,7 @@ test_that("dt_history_raw() returns a tibble with expected columns", {
       "vehicle_length_m", "lane", "direction",
       "vehicle_class", "speed_kmh", "quality_flag",
       "interval_ms", "time_in_loop_ms",
-      "datetime", "vehicle_class_label"
+      "datetime", "vehicle_class_label", "vehicle_class_category"
     ))
   })
 })
@@ -99,7 +99,7 @@ test_that("dt_vehicle_classes() returns 9 rows", {
 
 test_that("dt_vehicle_classes() has correct column names", {
   result <- dt_vehicle_classes()
-  expect_named(result, c("vehicle_class", "label_en", "label_fi"))
+  expect_named(result, c("vehicle_class", "label_en", "label_fi", "category_en", "category_fi"))
 })
 
 test_that("dt_vehicle_classes() vehicle_class is 1:9", {
@@ -107,8 +107,31 @@ test_that("dt_vehicle_classes() vehicle_class is 1:9", {
   expect_equal(result$vehicle_class, 1L:9L)
 })
 
-test_that("dt_vehicle_classes() has no NA labels", {
+test_that("dt_vehicle_classes() has no NA labels or categories", {
   result <- dt_vehicle_classes()
   expect_false(anyNA(result$label_en))
   expect_false(anyNA(result$label_fi))
+  expect_false(anyNA(result$category_en))
+  expect_false(anyNA(result$category_fi))
+})
+
+test_that("dt_vehicle_classes() category_en groupings are correct", {
+  result <- dt_vehicle_classes()
+  expect_equal(result$category_en[result$vehicle_class %in% c(1L, 6L, 7L)],
+               rep("Car", 3))
+  expect_equal(result$category_en[result$vehicle_class %in% c(2L, 4L, 5L, 9L)],
+               rep("Truck", 4))
+  expect_equal(result$category_en[result$vehicle_class == 3L], "Bus")
+  expect_equal(result$category_en[result$vehicle_class == 8L], "Motorcycle")
+})
+
+test_that("dt_history_raw() vehicle_class_category is populated", {
+  httptest2::with_mock_dir("fixtures", {
+    result <- dt_history_raw(tms_number = 1, date = as.Date("2024-01-15"))
+    expect_type(result$vehicle_class_category, "character")
+    car_rows <- result[result$vehicle_class == 1L, ]
+    expect_true(all(car_rows$vehicle_class_category == "Car"))
+    moto_row <- result[result$vehicle_class == 8L, ]
+    expect_equal(moto_row$vehicle_class_category, "Motorcycle")
+  })
 })
