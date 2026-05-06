@@ -63,3 +63,27 @@ test_that("dt_sensor_constants(id) warns for unknown station id", {
 test_that("dt_sensor_constants() rejects non-integer id", {
   expect_error(dt_sensor_constants(id = "abc"), class = "rlang_error")
 })
+
+# parse_sensor_constants() edge cases -------------------------------------
+
+test_that("parse_sensor_constants() handles empty stations list", {
+  result <- parse_sensor_constants(list(stations = list()))
+  expect_s3_class(result, "tbl_df")
+  expect_equal(nrow(result), 0L)
+  expect_named(result, c(
+    "station_id", "data_updated_time", "name", "value", "valid_from", "valid_to"
+  ))
+})
+
+test_that("parse_sensor_constants() handles a station with no constants", {
+  data <- list(stations = list(list(
+    id              = 99L,
+    dataUpdatedTime = "2024-01-01T00:00:00Z",
+    sensorConstantValues = list()
+  )))
+  result <- parse_sensor_constants(data)
+  expect_equal(nrow(result), 1L)
+  expect_equal(result$station_id, 99L)
+  expect_true(is.na(result$name))
+  expect_true(is.na(result$value))
+})

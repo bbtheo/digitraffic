@@ -1,44 +1,74 @@
 ## Tests for dt_stations() and dt_station() (R/dt_stations.R)
 ## Uses httptest2::with_mock_dir() to serve fixture JSON files.
 
+# Expected column set for dt_stations() output
+.dt_stations_cols <- c(
+  "id", "tms_number", "name", "road_number",
+  "longitude", "latitude", "elevation", "bearing",
+  "municipality", "province",
+  "collection_status", "state", "data_updated_time"
+)
+
 # dt_stations() -----------------------------------------------------------
 
 test_that("dt_stations() returns a tibble with expected columns", {
   httptest2::with_mock_dir("fixtures", {
-    result <- dt_stations()
+    result <- suppressWarnings(dt_stations())
     expect_s3_class(result, "tbl_df")
-    expect_named(result, c(
-      "id", "tms_number", "name", "longitude", "latitude", "elevation",
-      "bearing", "collection_status", "state", "data_updated_time"
-    ))
+    expect_named(result, .dt_stations_cols)
   })
 })
 
 test_that("dt_stations() returns all stations from the fixture", {
   httptest2::with_mock_dir("fixtures", {
-    result <- dt_stations()
+    result <- suppressWarnings(dt_stations())
     expect_equal(nrow(result), 3L)
   })
 })
 
 test_that("dt_stations() columns have correct types", {
   httptest2::with_mock_dir("fixtures", {
-    result <- dt_stations()
+    result <- suppressWarnings(dt_stations())
     expect_type(result$id,                "integer")
     expect_type(result$tms_number,        "integer")
     expect_type(result$name,              "character")
+    expect_type(result$road_number,       "integer")
     expect_type(result$longitude,         "double")
     expect_type(result$latitude,          "double")
     expect_type(result$elevation,         "double")
     expect_type(result$bearing,           "integer")
+    expect_type(result$municipality,      "character")
+    expect_type(result$province,          "character")
     expect_type(result$collection_status, "character")
     expect_s3_class(result$data_updated_time, "POSIXct")
   })
 })
 
+test_that("dt_stations() road_number column is populated from station names", {
+  httptest2::with_mock_dir("fixtures", {
+    result <- suppressWarnings(dt_stations())
+    # vt7_Rita -> 7, vt1_Espoo_Hirvisuo -> 1, vt3_Helsinki_Kannelmaki -> 3
+    expect_true(7L %in% result$road_number)
+    expect_true(1L %in% result$road_number)
+    expect_true(3L %in% result$road_number)
+  })
+})
+
+test_that("dt_stations() municipality and province columns are present", {
+  httptest2::with_mock_dir("fixtures", {
+    result <- suppressWarnings(dt_stations())
+    # bundled cache has Porvoo / Uusimaa for station 23001
+    expect_true("municipality" %in% names(result))
+    expect_true("province"     %in% names(result))
+    porvoo_row <- result[result$name == "vt7_Rita", ]
+    expect_equal(porvoo_row$municipality, "Porvoo")
+    expect_equal(porvoo_row$province,     "Uusimaa")
+  })
+})
+
 test_that("dt_stations() name filter works (case-insensitive)", {
   httptest2::with_mock_dir("fixtures", {
-    result <- dt_stations(name = "espoo")
+    result <- suppressWarnings(dt_stations(name = "espoo"))
     expect_equal(nrow(result), 1L)
     expect_equal(result$name, "vt1_Espoo_Hirvisuo")
   })
@@ -46,34 +76,33 @@ test_that("dt_stations() name filter works (case-insensitive)", {
 
 test_that("dt_stations() name filter supports regex", {
   httptest2::with_mock_dir("fixtures", {
-    result <- dt_stations(name = "^vt[13]_")
+    result <- suppressWarnings(dt_stations(name = "^vt[13]_"))
     expect_equal(nrow(result), 2L)
   })
 })
 
 test_that("dt_stations() returns zero rows (not error) for no matches", {
   httptest2::with_mock_dir("fixtures", {
-    result <- dt_stations(name = "zzz_no_match")
+    result <- suppressWarnings(dt_stations(name = "zzz_no_match"))
     expect_s3_class(result, "tbl_df")
     expect_equal(nrow(result), 0L)
+    expect_named(result, .dt_stations_cols)
   })
 })
 
 test_that("dt_stations() rejects non-string name argument", {
-  httptest2::with_mock_dir("fixtures", {
-    expect_error(dt_stations(name = 123), class = "rlang_error")
-    expect_error(dt_stations(name = c("a", "b")), class = "rlang_error")
-  })
+  expect_error(dt_stations(name = 123),       class = "rlang_error")
+  expect_error(dt_stations(name = c("a","b")), class = "rlang_error")
 })
 
 test_that("dt_stations() caches results within session", {
   dt_cache_clear()
   httptest2::with_mock_dir("fixtures", {
-    r1 <- dt_stations()
+    r1 <- suppressWarnings(dt_stations())
     # Second call should use cache — if it tried to make a request outside
     # the mock context it would error, so this proves the cache was used.
   })
-  r2 <- dt_stations()  # outside mock dir — must come from cache
+  r2 <- suppressWarnings(dt_stations())  # outside mock dir — must come from cache
   expect_equal(nrow(r2), 3L)
   dt_cache_clear()
 })
@@ -140,6 +169,8 @@ test_that("dt_station() rejects non-integer id", {
 # parse_stations_response() edge cases ------------------------------------
 
 test_that("parse_stations_response() handles empty features list", {
+  # parse_stations_response() itself returns the 10-column bulk shape;
+  # road_number / municipality / province are added by dt_stations() after.
   empty <- list(type = "FeatureCollection", features = list())
   result <- parse_stations_response(empty)
   expect_s3_class(result, "tbl_df")

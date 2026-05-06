@@ -1,26 +1,26 @@
 #' List all LAM/TMS measurement stations
 #'
 #' Fetches metadata for all automatic traffic measurement (LAM/TMS) stations
-#' from the Digitraffic API.  Basic results (name, coordinates, status) are
-#' cached for 5 minutes per R session.
+#' from the Digitraffic API.  Basic results are cached for 5 minutes per R
+#' session.  Extended columns (`road_number`, `municipality`, `province`) are
+#' always included in the output: `road_number` is parsed from the station name
+#' (no extra API calls), while `municipality` and `province` are joined from the
+#' bundled detailed cache (or a user-refreshed disk cache — see
+#' [dt_stations_load_details()]).
 #'
-#' Filtering by `road_number`, `municipality`, `province`, or `bbox` requires
-#' extended station metadata.  This is served from a bundled snapshot baked
-#' into the package, or from a user-refreshed disk cache
-#' (`tools::R_user_dir("digitraffic", "cache")`).  If the network list of
-#' stations has changed since the cache was built, a warning is emitted with
-#' instructions to call [dt_stations_load_details()].
+#' If the live station list has changed since the cache was built and you filter
+#' by `municipality` or `province`, a warning is emitted with instructions to
+#' refresh the cache.
 #'
 #' @param name `NULL` or a case-insensitive regular expression matched against
 #'   station names, e.g. `"Espoo"` or `"^vt1_"`.
 #' @param road_number `NULL` or a positive integer road number, e.g. `7` for
 #'   valtatie 7.  Parsed from the station name — fast, no extra API calls.
 #' @param municipality `NULL` or a character string matched
-#'   case-insensitively against the municipality name, e.g. `"Espoo"`.
-#'   Requires the detailed station cache.
+#'   case-insensitively against the `municipality` column, e.g. `"Espoo"`.
+#'   Supports regex, e.g. `"Helsinki|Espoo"`.
 #' @param province `NULL` or a character string matched case-insensitively
-#'   against the province name, e.g. `"Uusimaa"`.  Requires the detailed
-#'   station cache.
+#'   against the `province` column, e.g. `"Uusimaa"`.  Supports regex.
 #' @param bbox `NULL` or a length-4 numeric vector
 #'   `c(lon_min, lat_min, lon_max, lat_max)` in WGS-84 degrees.  Filters
 #'   stations whose coordinates fall inside the bounding box.
@@ -30,10 +30,16 @@
 #'     \item{id}{Integer. Internal API station identifier.}
 #'     \item{tms_number}{Integer. TMS system number (used for history CSV).}
 #'     \item{name}{Character. Station name.}
+#'     \item{road_number}{Integer. Road number parsed from the station name
+#'       (e.g. `7` for `"vt7_Rita"`). `NA` for non-standard names.}
 #'     \item{longitude}{Double. WGS-84 longitude.}
 #'     \item{latitude}{Double. WGS-84 latitude.}
 #'     \item{elevation}{Double. Elevation in metres.}
-#'     \item{bearing}{Integer. Road bearing in degrees (0-360).}
+#'     \item{bearing}{Integer. Road bearing in degrees (0–360).}
+#'     \item{municipality}{Character. Municipality name from the detailed cache.
+#'       `NA` for stations added after the cache was last built.}
+#'     \item{province}{Character. Province name from the detailed cache.
+#'       `NA` for stations added after the cache was last built.}
 #'     \item{collection_status}{Character. `"GATHERING"` or `"REMOVED_TEMPORARILY"`.}
 #'     \item{state}{Character. Operational state, e.g. `"OK"`.}
 #'     \item{data_updated_time}{POSIXct (UTC). Time the record was last updated.}
@@ -42,7 +48,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' # All stations
+#' # All stations — road_number, municipality, province always present
 #' dt_stations()
 #'
 #' # By name (regex supported)
@@ -52,7 +58,7 @@
 #' # By road number
 #' dt_stations(road_number = 7)
 #'
-#' # By municipality
+#' # By municipality (matches the municipality column you see in the output)
 #' dt_stations(municipality = "Espoo")
 #'
 #' # By province
@@ -70,6 +76,19 @@ dt_stations <- function(name         = NULL,
                         province     = NULL,
                         bbox         = NULL) {
 
+  # --- Validate filter inputs up-front -------------------------------------
+  if (!is.null(name) && !rlang::is_string(name)) {
+    cli::cli_abort(
+      "{.arg name} must be a single character string, not {.obj_type_friendly {name}}."
+    )
+  }
+  if (!is.null(municipality) && !rlang::is_string(municipality)) {
+    cli::cli_abort("{.arg municipality} must be a single character string.")
+  }
+  if (!is.null(province) && !rlang::is_string(province)) {
+    cli::cli_abort("{.arg province} must be a single character string.")
+  }
+
   # --- Fetch / use cached bulk station list --------------------------------
   stations <- dt_cache_get("stations")
   if (is.null(stations)) {
@@ -77,28 +96,49 @@ dt_stations <- function(name         = NULL,
     stations <- parse_stations_response(raw)
     dt_cache_set("stations", stations, ttl = 300)
   }
+  # Keep a reference to the full live list for the integrity check below.
+  live_stations <- stations
 
-  # --- name filter (works on bulk data) ------------------------------------
+  # --- Always enrich output with road_number, municipality, province -------
+  #
+  # road_number: parsed from the station name — always fresh, no cache needed.
+  stations$road_number <- vapply(
+    stations$name, parse_road_number_from_name, integer(1L)
+  )
+
+  # municipality + province: fast local read from the bundled/disk cache.
+  # New stations not yet in the cache will show NA in these columns.
+  detailed  <- dt_load_detailed_cache()
+  extra     <- detailed[, c("id", "municipality", "province")]
+  stations  <- dplyr::left_join(stations, extra, by = "id")
+
+  # Reorder into a logical layout: identifiers → road → coordinates →
+  # administrative geography → operational status.
+  stations <- stations[, c(
+    "id", "tms_number", "name", "road_number",
+    "longitude", "latitude", "elevation", "bearing",
+    "municipality", "province",
+    "collection_status", "state", "data_updated_time"
+  )]
+
+  # --- name filter ---------------------------------------------------------
   if (!is.null(name)) {
-    if (!rlang::is_string(name)) {
-      cli::cli_abort(
-        "{.arg name} must be a single character string, not {.obj_type_friendly {name}}."
-      )
-    }
     stations <- dplyr::filter(
       stations,
       grepl(.env$name, .data$name, ignore.case = TRUE, perl = TRUE)
     )
   }
 
-  # --- road_number filter (parsed from name, no extra API calls) -----------
+  # --- road_number filter --------------------------------------------------
   if (!is.null(road_number)) {
     road_number <- check_id(road_number)
-    parsed <- vapply(stations$name, parse_road_number_from_name, integer(1L))
-    stations <- stations[!is.na(parsed) & parsed == road_number, ]
+    stations <- dplyr::filter(
+      stations,
+      !is.na(.data$road_number) & .data$road_number == .env$road_number
+    )
   }
 
-  # --- bbox filter (works on bulk coordinates) -----------------------------
+  # --- bbox filter ---------------------------------------------------------
   if (!is.null(bbox)) {
     check_bbox(bbox)
     stations <- dplyr::filter(
@@ -108,26 +148,12 @@ dt_stations <- function(name         = NULL,
     )
   }
 
-  # --- Validate detailed-filter inputs before hitting the cache ------------
-  if (!is.null(municipality) && !rlang::is_string(municipality)) {
-    cli::cli_abort("{.arg municipality} must be a single character string.")
-  }
-  if (!is.null(province) && !rlang::is_string(province)) {
-    cli::cli_abort("{.arg province} must be a single character string.")
-  }
-
-  # --- Detailed filters (municipality, province) ---------------------------
-  needs_detail <- !is.null(municipality) || !is.null(province)
-
-  if (needs_detail) {
-    detailed <- dt_load_detailed_cache()
-    # Pass the already-fetched `stations` tibble so the integrity check does
-    # not make a redundant API call.
-    dt_check_detailed_integrity(detailed, stations)
-
-    # Join only the extra columns we need, matching on id.
-    extra    <- detailed[, c("id", "municipality", "province")]
-    stations <- dplyr::left_join(stations, extra, by = "id")
+  # --- municipality / province filters -------------------------------------
+  # The staleness warning is only emitted when these filters are actually used:
+  # that is the only time an out-of-date cache would silently affect results.
+  # The full live station list (pre-filter) is used for the ID comparison.
+  if (!is.null(municipality) || !is.null(province)) {
+    dt_check_detailed_integrity(detailed, live_stations)
 
     if (!is.null(municipality)) {
       stations <- dplyr::filter(
@@ -141,9 +167,6 @@ dt_stations <- function(name         = NULL,
         grepl(.env$province, .data$province, ignore.case = TRUE, perl = TRUE)
       )
     }
-
-    # Drop the joined columns so the return shape stays consistent.
-    stations <- stations[, !names(stations) %in% c("municipality", "province")]
   }
 
   stations

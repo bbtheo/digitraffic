@@ -28,9 +28,10 @@ dt_cache_get <- function(key) {
 
 #' Clear the in-session digitraffic cache
 #'
-#' Station metadata is cached for 5 minutes within an R session to avoid
-#' redundant API calls.  Call this function to force the next
-#' [dt_stations()] or [dt_station()] call to fetch fresh data.
+#' Station metadata ([dt_stations()]) and sensor metadata ([dt_sensors()])
+#' are cached for 5 minutes within an R session to avoid redundant API calls.
+#' Call this function to force the next call to either function to fetch
+#' fresh data from the API.
 #'
 #' @return Invisibly returns `NULL`.
 #' @export

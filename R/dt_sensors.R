@@ -27,6 +27,10 @@
 #' dt_sensors() |> filter(unit == "km/h")
 #' }
 dt_sensors <- function() {
-  raw <- dt_get_json("/api/tms/v1/sensors")
-  parse_sensors(raw)
+  cached <- dt_cache_get("sensors")
+  if (!is.null(cached)) return(cached)
+  raw    <- dt_get_json("/api/tms/v1/sensors")
+  result <- parse_sensors(raw)
+  dt_cache_set("sensors", result, ttl = 300)
+  result
 }

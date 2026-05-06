@@ -99,3 +99,48 @@ test_that("check_history_date() rejects future dates", {
   )
 })
 
+# check_bbox() — WGS-84 range validation ----------------------------------
+
+test_that("check_bbox() rejects longitude > 180", {
+  expect_error(check_bbox(c(25.0, 60.0, 181.0, 61.0)), class = "rlang_error")
+})
+
+test_that("check_bbox() rejects longitude < -180", {
+  expect_error(check_bbox(c(-181.0, 60.0, 25.0, 61.0)), class = "rlang_error")
+})
+
+test_that("check_bbox() rejects latitude > 90", {
+  expect_error(check_bbox(c(24.0, 60.0, 25.0, 91.0)), class = "rlang_error")
+})
+
+test_that("check_bbox() rejects latitude < -90", {
+  expect_error(check_bbox(c(24.0, -91.0, 25.0, 61.0)), class = "rlang_error")
+})
+
+# parse_dt() — ISO 8601 variant handling ----------------------------------
+
+test_that("parse_dt() parses Z-suffix timestamps correctly", {
+  result <- parse_dt("2024-06-01T12:00:00Z")
+  expect_s3_class(result, "POSIXct")
+  expect_false(is.na(result))
+  expect_equal(attr(result, "tzone"), "UTC")
+})
+
+test_that("parse_dt() parses numeric offset timestamps correctly", {
+  result <- parse_dt("2024-06-01T12:00:00+03:00")
+  expect_s3_class(result, "POSIXct")
+  expect_false(is.na(result))
+})
+
+test_that("parse_dt() returns NA POSIXct for NULL input", {
+  result <- parse_dt(NULL)
+  expect_s3_class(result, "POSIXct")
+  expect_true(is.na(result))
+})
+
+test_that("parse_dt() returns NA POSIXct for NA input", {
+  result <- parse_dt(NA)
+  expect_s3_class(result, "POSIXct")
+  expect_true(is.na(result))
+})
+

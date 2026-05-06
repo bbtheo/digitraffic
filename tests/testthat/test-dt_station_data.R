@@ -127,3 +127,28 @@ test_that("dt_sensors() sensor with no English description returns NA", {
     expect_true(is.na(count_sensor$description_en))
   })
 })
+
+test_that("dt_sensors() result is cached within session", {
+  dt_cache_clear()
+  httptest2::with_mock_dir("fixtures", {
+    r1 <- dt_sensors()
+  })
+  # Second call outside mock dir must come from cache, not make a real request.
+  r2 <- dt_sensors()
+  expect_equal(nrow(r2), 3L)
+  dt_cache_clear()
+})
+
+# parse_all_stations_data() edge cases ------------------------------------
+
+test_that("parse_all_stations_data() handles empty stations list", {
+  result <- parse_all_stations_data(list(stations = list()))
+  expect_s3_class(result, "tbl_df")
+  expect_equal(nrow(result), 0L)
+  expect_named(result, c(
+    "station_id", "tms_number", "data_updated_time",
+    "sensor_id", "name", "short_name",
+    "value", "unit", "measured_time",
+    "time_window_start", "time_window_end"
+  ))
+})

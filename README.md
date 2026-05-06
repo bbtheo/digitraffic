@@ -23,14 +23,15 @@ pak::pak("bbtheo/digitraffic")
 ```r
 library(digitraffic)
 
-# List all measurement stations
+# List all measurement stations — road_number, municipality, province always included
 dt_stations()
-#> # A tibble: 489 x 10
-#>       id tms_number name                 longitude latitude elevation bearing
-#>    <int>      <int> <chr>                    <dbl>    <dbl>     <dbl>   <int>
-#>  1 20002      20002 vt1_Espoo_Hirvisuo        24.6     60.2      30       298
-#>  2 23001          1 vt7_Rita                  25.7     60.4       0        60
-#>  …
+#> # A tibble: 489 x 13
+#>       id tms_number name               road_number longitude latitude elevation
+#>    <int>      <int> <chr>                    <int>     <dbl>    <dbl>     <dbl>
+#>  1 20002      20002 vt1_Espoo_Hirvisuo           1      24.6     60.2        30
+#>  2 23001          1 vt7_Rita                     7      25.7     60.4         0
+#>  # … with 6 more variables: bearing <int>, municipality <chr>, province <chr>,
+#>  #   collection_status <chr>, state <chr>, data_updated_time <dttm>
 
 # Search by name (supports regex)
 dt_stations(name = "Espoo")

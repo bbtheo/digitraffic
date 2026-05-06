@@ -14,6 +14,7 @@ reference:
     contents:
       - dt_stations
       - dt_station
+      - dt_stations_load_details
 
   - title: Sensor Data
     desc: Real-time traffic measurements

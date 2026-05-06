@@ -78,8 +78,8 @@ dt_stations(road_number = 7)
 dt_stations(road_number = 50)
 
 # Stations on roads 1 through 5
-lapply(1:5, dt_stations, road_number = ) |>
-  dplyr::bind_rows(.id = "road")
+lapply(1:5, \(rn) dt_stations(road_number = rn)) |>
+  dplyr::bind_rows()
 ```
 
 Stations whose names don't follow the standard convention return `NA` for the
