@@ -11,13 +11,13 @@ Source:
 [`DESCRIPTION`](https://github.com/bbtheo/digitraffic/blob/main/DESCRIPTION)
 
 Blauberg T (2026). *digitraffic: R Client for the Finntraffic
-Digitraffic API*. R package version 0.0.0.9007,
+Digitraffic API*. R package version 0.0.0.9008,
 <https://github.com/bbtheo/digitraffic>.
 
     @Manual{,
       title = {digitraffic: R Client for the Finntraffic Digitraffic API},
       author = {Theo Blauberg},
       year = {2026},
-      note = {R package version 0.0.0.9007},
+      note = {R package version 0.0.0.9008},
       url = {https://github.com/bbtheo/digitraffic},
     }
