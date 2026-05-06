@@ -85,36 +85,39 @@ test_that("dt_perform() raises digitraffic_error_http on 500", {
 })
 
 test_that("dt_perform() retries on httr2_failure and succeeds", {
-  # Simulate a timeout on the first attempt, then a clean 200 on the retry.
-  mock_timeout <- function(req) {
-    rlang::abort("timed out", class = c("httr2_failure", "error"))
+  # retry_on_failure = TRUE means network errors (httr2_failure) are retried.
+  # Use a stateful function mock: fail on the first attempt, succeed on retry.
+  attempt <- 0L
+  mock_fn <- function(req) {
+    attempt <<- attempt + 1L
+    if (attempt == 1L) {
+      rlang::abort("timed out", class = c("httr2_failure", "error"))
+    }
+    httr2::response(
+      status_code = 200L,
+      headers = list(`Content-Type` = "application/json"),
+      body = charToRaw('{"ok":true}')
+    )
   }
-  mock_ok <- httr2::response(
-    status_code = 200L,
-    headers = list(`Content-Type` = "application/json"),
-    body = charToRaw('{"ok":true}')
-  )
-  httr2::with_mocked_responses(list(mock_timeout, mock_ok), {
+  httr2::with_mocked_responses(mock_fn, {
     req <- dt_base_request() |>
       httr2::req_url_path("/api/tms/v1/stations")
     resp <- dt_perform(req)
     expect_equal(httr2::resp_status(resp), 200L)
+    expect_equal(attempt, 2L)   # confirms one failure + one retry
   })
 })
 
 test_that("dt_perform() raises digitraffic_error_network when all retries fail with httr2_failure", {
-  # Exhaust all 5 attempts with a simulated network error.
-  mock_timeout <- function(req) {
+  # Always signal a network error so all 5 attempts are exhausted.
+  mock_fn <- function(req) {
     rlang::abort("timed out", class = c("httr2_failure", "error"))
   }
-  httr2::with_mocked_responses(
-    list(mock_timeout, mock_timeout, mock_timeout, mock_timeout, mock_timeout),
-    {
-      req <- dt_base_request() |>
-        httr2::req_url_path("/api/tms/v1/stations")
-      expect_error(dt_perform(req), class = "digitraffic_error_network")
-    }
-  )
+  httr2::with_mocked_responses(mock_fn, {
+    req <- dt_base_request() |>
+      httr2::req_url_path("/api/tms/v1/stations")
+    expect_error(dt_perform(req), class = "digitraffic_error_network")
+  })
 })
 
 # dt_get_json() -----------------------------------------------------------
