@@ -1,6 +1,6 @@
 # Vehicle classification codes used in LAM raw data
 
-Returns the lookup table mapping integer vehicle class codes (1-7) to
+Returns the lookup table mapping integer vehicle class codes (1-9) to
 their English and Finnish labels, as used in the `vehicle_class` column
 of
 [`dt_history_raw()`](https://bbtheo.github.io/digitraffic/reference/dt_history_raw.md).
@@ -17,7 +17,7 @@ A tibble with columns:
 
 - vehicle_class:
 
-  Integer. Class code (1-7).
+  Integer. Class code (1-9).
 
 - label_en:
 
@@ -31,14 +31,16 @@ A tibble with columns:
 
 ``` r
 dt_vehicle_classes()
-#> # A tibble: 7 × 3
+#> # A tibble: 9 × 3
 #>   vehicle_class label_en                  label_fi                            
 #>           <int> <chr>                     <chr>                               
 #> 1             1 Car / van                 Henkilö- tai pakettiauto            
-#> 2             2 Truck (no trailer)        Kuorma-auto (ei perävaunua)         
+#> 2             2 Truck (no trailer)        Kuorma-auto ilman perävaunua        
 #> 3             3 Bus                       Linja-auto                          
 #> 4             4 Truck + semitrailer       Kuorma-auto ja puoliperävaunu       
 #> 5             5 Truck + full trailer      Kuorma-auto ja täysperävaunu        
-#> 6             6 Car + caravan / motorhome Henkilöauto ja asuntovaunu tai -auto
-#> 7             7 Motorcycle / moped        Moottoripyörä tai mopo              
+#> 6             6 Car + trailer             Henkilöauto ja peräkärry            
+#> 7             7 Car + caravan / motorhome Henkilöauto ja asuntovaunu tai -auto
+#> 8             8 Motorcycle / moped        Moottoripyörä tai mopo              
+#> 9             9 High Capacity Truck       HCT-ajoneuvoyhdistelmä              
 ```

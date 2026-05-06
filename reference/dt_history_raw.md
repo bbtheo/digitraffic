@@ -62,7 +62,7 @@ A tibble with one row per vehicle passage and columns:
 
 - vehicle_class:
 
-  Integer. Class code 1–7 (see
+  Integer. Class code 1–9 (see
   [`dt_vehicle_classes()`](https://bbtheo.github.io/digitraffic/reference/dt_vehicle_classes.md)).
 
 - speed_kmh:

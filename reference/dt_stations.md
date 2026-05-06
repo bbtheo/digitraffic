@@ -1,8 +1,13 @@
 # List all LAM/TMS measurement stations
 
 Fetches metadata for all automatic traffic measurement (LAM/TMS)
-stations from the Digitraffic API. Basic results (name, coordinates,
-status) are cached for 5 minutes per R session.
+stations from the Digitraffic API. Basic results are cached for 5
+minutes per R session. Extended columns (`road_number`, `municipality`,
+`province`) are always included in the output: `road_number` is parsed
+from the station name (no extra API calls), while `municipality` and
+`province` are joined from the bundled detailed cache (or a
+user-refreshed disk cache — see
+[`dt_stations_load_details()`](https://bbtheo.github.io/digitraffic/reference/dt_stations_load_details.md)).
 
 ## Usage
 
@@ -31,13 +36,13 @@ dt_stations(
 - municipality:
 
   `NULL` or a character string matched case-insensitively against the
-  municipality name, e.g. `"Espoo"`. Requires the detailed station
-  cache.
+  `municipality` column, e.g. `"Espoo"`. Supports regex, e.g.
+  `"Helsinki|Espoo"`.
 
 - province:
 
   `NULL` or a character string matched case-insensitively against the
-  province name, e.g. `"Uusimaa"`. Requires the detailed station cache.
+  `province` column, e.g. `"Uusimaa"`. Supports regex.
 
 - bbox:
 
@@ -61,6 +66,11 @@ A tibble with one row per matching station and columns:
 
   Character. Station name.
 
+- road_number:
+
+  Integer. Road number parsed from the station name (e.g. `7` for
+  `"vt7_Rita"`). `NA` for non-standard names.
+
 - longitude:
 
   Double. WGS-84 longitude.
@@ -75,7 +85,17 @@ A tibble with one row per matching station and columns:
 
 - bearing:
 
-  Integer. Road bearing in degrees (0-360).
+  Integer. Road bearing in degrees (0–360).
+
+- municipality:
+
+  Character. Municipality name from the detailed cache. `NA` for
+  stations added after the cache was last built.
+
+- province:
+
+  Character. Province name from the detailed cache. `NA` for stations
+  added after the cache was last built.
 
 - collection_status:
 
@@ -91,19 +111,15 @@ A tibble with one row per matching station and columns:
 
 ## Details
 
-Filtering by `road_number`, `municipality`, `province`, or `bbox`
-requires extended station metadata. This is served from a bundled
-snapshot baked into the package, or from a user-refreshed disk cache
-(`tools::R_user_dir("digitraffic", "cache")`). If the network list of
-stations has changed since the cache was built, a warning is emitted
-with instructions to call
-[`dt_stations_load_details()`](https://bbtheo.github.io/digitraffic/reference/dt_stations_load_details.md).
+If the live station list has changed since the cache was built and you
+filter by `municipality` or `province`, a warning is emitted with
+instructions to refresh the cache.
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-# All stations
+# All stations — road_number, municipality, province always present
 dt_stations()
 
 # By name (regex supported)
@@ -113,7 +129,7 @@ dt_stations(name = "^vt1_")
 # By road number
 dt_stations(road_number = 7)
 
-# By municipality
+# By municipality (matches the municipality column you see in the output)
 dt_stations(municipality = "Espoo")
 
 # By province
