@@ -9,13 +9,13 @@ dt_vehicle_classes()
 \value{
 A tibble with columns:
 \describe{
-\item{vehicle_class}{Integer. Class code (1-7).}
+\item{vehicle_class}{Integer. Class code (1-9).}
 \item{label_en}{Character. English label.}
 \item{label_fi}{Character. Finnish label (UTF-8).}
 }
 }
 \description{
-Returns the lookup table mapping integer vehicle class codes (1-7) to
+Returns the lookup table mapping integer vehicle class codes (1-9) to
 their English and Finnish labels, as used in the \code{vehicle_class} column
 of \code{\link[=dt_history_raw]{dt_history_raw()}}.
 }

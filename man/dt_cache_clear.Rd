@@ -10,9 +10,10 @@ dt_cache_clear()
 Invisibly returns \code{NULL}.
 }
 \description{
-Station metadata is cached for 5 minutes within an R session to avoid
-redundant API calls.  Call this function to force the next
-\code{\link[=dt_stations]{dt_stations()}} or \code{\link[=dt_station]{dt_station()}} call to fetch fresh data.
+Station metadata (\code{\link[=dt_stations]{dt_stations()}}) and sensor metadata (\code{\link[=dt_sensors]{dt_sensors()}})
+are cached for 5 minutes within an R session to avoid redundant API calls.
+Call this function to force the next call to either function to fetch
+fresh data from the API.
 }
 \examples{
 dt_cache_clear()

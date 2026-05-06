@@ -39,8 +39,8 @@ test_that("dt_history_raw() vehicle_class_label is populated correctly", {
     # class 1 = "Car / van"
     car_rows <- result[result$vehicle_class == 1L, ]
     expect_true(all(car_rows$vehicle_class_label == "Car / van"))
-    # class 7 = "Motorcycle / moped"
-    moto_row <- result[result$vehicle_class == 7L, ]
+    # class 8 = "Motorcycle / moped"
+    moto_row <- result[result$vehicle_class == 8L, ]
     expect_equal(moto_row$vehicle_class_label, "Motorcycle / moped")
   })
 })
@@ -92,9 +92,9 @@ test_that("parse_history_csv() parses a minimal valid row", {
 
 # dt_vehicle_classes() ----------------------------------------------------
 
-test_that("dt_vehicle_classes() returns 7 rows", {
+test_that("dt_vehicle_classes() returns 9 rows", {
   result <- dt_vehicle_classes()
-  expect_equal(nrow(result), 7L)
+  expect_equal(nrow(result), 9L)
 })
 
 test_that("dt_vehicle_classes() has correct column names", {
@@ -102,9 +102,9 @@ test_that("dt_vehicle_classes() has correct column names", {
   expect_named(result, c("vehicle_class", "label_en", "label_fi"))
 })
 
-test_that("dt_vehicle_classes() vehicle_class is 1:7", {
+test_that("dt_vehicle_classes() vehicle_class is 1:9", {
   result <- dt_vehicle_classes()
-  expect_equal(result$vehicle_class, 1L:7L)
+  expect_equal(result$vehicle_class, 1L:9L)
 })
 
 test_that("dt_vehicle_classes() has no NA labels", {

@@ -20,12 +20,11 @@ station names, e.g. \code{"Espoo"} or \code{"^vt1_"}.}
 valtatie 7.  Parsed from the station name — fast, no extra API calls.}
 
 \item{municipality}{\code{NULL} or a character string matched
-case-insensitively against the municipality name, e.g. \code{"Espoo"}.
-Requires the detailed station cache.}
+case-insensitively against the \code{municipality} column, e.g. \code{"Espoo"}.
+Supports regex, e.g. \code{"Helsinki|Espoo"}.}
 
 \item{province}{\code{NULL} or a character string matched case-insensitively
-against the province name, e.g. \code{"Uusimaa"}.  Requires the detailed
-station cache.}
+against the \code{province} column, e.g. \code{"Uusimaa"}.  Supports regex.}
 
 \item{bbox}{\code{NULL} or a length-4 numeric vector
 \code{c(lon_min, lat_min, lon_max, lat_max)} in WGS-84 degrees.  Filters
@@ -37,10 +36,16 @@ A tibble with one row per matching station and columns:
 \item{id}{Integer. Internal API station identifier.}
 \item{tms_number}{Integer. TMS system number (used for history CSV).}
 \item{name}{Character. Station name.}
+\item{road_number}{Integer. Road number parsed from the station name
+(e.g. \code{7} for \code{"vt7_Rita"}). \code{NA} for non-standard names.}
 \item{longitude}{Double. WGS-84 longitude.}
 \item{latitude}{Double. WGS-84 latitude.}
 \item{elevation}{Double. Elevation in metres.}
-\item{bearing}{Integer. Road bearing in degrees (0-360).}
+\item{bearing}{Integer. Road bearing in degrees (0–360).}
+\item{municipality}{Character. Municipality name from the detailed cache.
+\code{NA} for stations added after the cache was last built.}
+\item{province}{Character. Province name from the detailed cache.
+\code{NA} for stations added after the cache was last built.}
 \item{collection_status}{Character. \code{"GATHERING"} or \code{"REMOVED_TEMPORARILY"}.}
 \item{state}{Character. Operational state, e.g. \code{"OK"}.}
 \item{data_updated_time}{POSIXct (UTC). Time the record was last updated.}
@@ -48,20 +53,21 @@ A tibble with one row per matching station and columns:
 }
 \description{
 Fetches metadata for all automatic traffic measurement (LAM/TMS) stations
-from the Digitraffic API.  Basic results (name, coordinates, status) are
-cached for 5 minutes per R session.
+from the Digitraffic API.  Basic results are cached for 5 minutes per R
+session.  Extended columns (\code{road_number}, \code{municipality}, \code{province}) are
+always included in the output: \code{road_number} is parsed from the station name
+(no extra API calls), while \code{municipality} and \code{province} are joined from the
+bundled detailed cache (or a user-refreshed disk cache — see
+\code{\link[=dt_stations_load_details]{dt_stations_load_details()}}).
 }
 \details{
-Filtering by \code{road_number}, \code{municipality}, \code{province}, or \code{bbox} requires
-extended station metadata.  This is served from a bundled snapshot baked
-into the package, or from a user-refreshed disk cache
-(\code{tools::R_user_dir("digitraffic", "cache")}).  If the network list of
-stations has changed since the cache was built, a warning is emitted with
-instructions to call \code{\link[=dt_stations_load_details]{dt_stations_load_details()}}.
+If the live station list has changed since the cache was built and you filter
+by \code{municipality} or \code{province}, a warning is emitted with instructions to
+refresh the cache.
 }
 \examples{
 \dontrun{
-# All stations
+# All stations — road_number, municipality, province always present
 dt_stations()
 
 # By name (regex supported)
@@ -71,7 +77,7 @@ dt_stations(name = "^vt1_")
 # By road number
 dt_stations(road_number = 7)
 
-# By municipality
+# By municipality (matches the municipality column you see in the output)
 dt_stations(municipality = "Espoo")
 
 # By province

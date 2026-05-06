@@ -25,7 +25,7 @@ A tibble with one row per vehicle passage and columns:
 \item{vehicle_length_m}{Double. Vehicle length in metres.}
 \item{lane}{Integer. Lane number.}
 \item{direction}{Integer. 1 = increasing direction, 2 = decreasing.}
-\item{vehicle_class}{Integer. Class code 1–7 (see \code{\link[=dt_vehicle_classes]{dt_vehicle_classes()}}).}
+\item{vehicle_class}{Integer. Class code 1–9 (see \code{\link[=dt_vehicle_classes]{dt_vehicle_classes()}}).}
 \item{speed_kmh}{Integer. Speed in km/h.}
 \item{quality_flag}{Integer. 0 = valid, 1 = outside valid range.}
 \item{interval_ms}{Integer. Time since previous vehicle (ms).}

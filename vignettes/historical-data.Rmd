@@ -78,7 +78,7 @@ The result has 17 columns:
 | `vehicle_length_m` | dbl | Vehicle length in metres |
 | `lane` | int | Lane number |
 | `direction` | int | 1 = increasing direction, 2 = decreasing |
-| `vehicle_class` | int | Class code 1-7 |
+| `vehicle_class` | int | Class code 1-9 |
 | `speed_kmh` | int | Speed in km/h |
 | `quality_flag` | int | 0 = valid, 1 = outside valid range |
 | `interval_ms` | int | Time since previous vehicle (ms) |
@@ -88,12 +88,12 @@ The result has 17 columns:
 
 ## Understanding vehicle classes
 
-The `vehicle_class` column uses integer codes 1-7. The full mapping is
+The `vehicle_class` column uses integer codes 1-9. The full mapping is
 available via `dt_vehicle_classes()`:
 
 ```{r vehicle-classes}
 dt_vehicle_classes()
-#> # A tibble: 7 x 3
+#> # A tibble: 9 x 3
 #>   vehicle_class label_en                   label_fi
 #>           <int> <chr>                      <chr>
 #> 1             1 Car / van                  ...
@@ -101,8 +101,10 @@ dt_vehicle_classes()
 #> 3             3 Bus                        ...
 #> 4             4 Truck + semitrailer        ...
 #> 5             5 Truck + full trailer       ...
-#> 6             6 Car + caravan / motorhome  ...
-#> 7             7 Motorcycle / moped         ...
+#> 6             6 Car + trailer              ...
+#> 7             7 Car + caravan / motorhome  ...
+#> 8             8 Motorcycle / moped         ...
+#> 9             9 High Capacity Truck        ...
 ```
 
 The `vehicle_class_label` column in `dt_history_raw()` output already joins
@@ -117,7 +119,7 @@ the observation fell outside valid measurement ranges:
 - Vehicle length: 1-39.8 m
 - Hour: 0-23
 - Direction: 1-2
-- Vehicle class: 1-7
+- Vehicle class: 1-9
 - Lane: >= 1
 
 ```{r quality-filter}
@@ -176,7 +178,7 @@ raw |>
   filter(quality_flag == 0) |>
   count(vehicle_class_label, sort = TRUE) |>
   mutate(pct = round(n / sum(n) * 100, 1))
-#> # A tibble: 7 x 3
+#> # A tibble: 9 x 3
 #>   vehicle_class_label          n   pct
 #>   <chr>                    <int> <dbl>
 #> 1 Car / van                24891  87.3
