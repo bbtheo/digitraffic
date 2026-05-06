@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">digitraffic</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9005</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9006</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -204,6 +204,13 @@ real-time data</li>
 <td>chr</td>
 <td>English label for the vehicle class</td>
 </tr>
+<tr class="odd">
+<td><code>vehicle_class_category</code></td>
+<td>chr</td>
+<td>Broad category: <code>"Car"</code>, <code>"Truck"</code>,
+<code>"Bus"</code>, <code>"Motorcycle"</code>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -214,9 +221,9 @@ real-time data</li>
 full mapping is available via <code><a href="../reference/dt_vehicle_classes.html">dt_vehicle_classes()</a></code>:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/dt_vehicle_classes.html">dt_vehicle_classes</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 9 x 3</span></span>
-<span><span class="co">#&gt;   vehicle_class label_en                   label_fi</span></span>
-<span><span class="co">#&gt;           &lt;int&gt; &lt;chr&gt;                      &lt;chr&gt;</span></span>
+<span><span class="co">#&gt; # A tibble: 9 x 5</span></span>
+<span><span class="co">#&gt;   vehicle_class label_en                   label_fi  category_en category_fi</span></span>
+<span><span class="co">#&gt;           &lt;int&gt; &lt;chr&gt;                      &lt;chr&gt;     &lt;chr&gt;       &lt;chr&gt;</span></span>
 <span><span class="co">#&gt; 1             1 Car / van                  ...</span></span>
 <span><span class="co">#&gt; 2             2 Truck (no trailer)         ...</span></span>
 <span><span class="co">#&gt; 3             3 Bus                        ...</span></span>
@@ -315,7 +322,7 @@ ranges:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">raw</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">quality_flag</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>type <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/if_else.html" class="external-link">if_else</a></span><span class="op">(</span><span class="va">vehicle_class</span> <span class="op">==</span> <span class="fl">1</span>, <span class="st">"Passenger"</span>, <span class="st">"Heavy"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>type <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/if_else.html" class="external-link">if_else</a></span><span class="op">(</span><span class="va">vehicle_class_category</span> <span class="op">==</span> <span class="st">"Car"</span>, <span class="st">"Car"</span>, <span class="st">"Heavy"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">hour</span>, <span class="va">type</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>mean_speed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">speed_kmh</span><span class="op">)</span>, .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">hour</span>, y <span class="op">=</span> <span class="va">mean_speed</span>, colour <span class="op">=</span> <span class="va">type</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -323,7 +330,7 @@ ranges:</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_continuous</a></span><span class="op">(</span>breaks <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">23</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
-<span>    title <span class="op">=</span> <span class="st">"Average speed by hour: passenger vs heavy vehicles"</span>,</span>
+<span>    title <span class="op">=</span> <span class="st">"Average speed by hour: cars vs heavy vehicles"</span>,</span>
 <span>    x <span class="op">=</span> <span class="st">"Hour of day"</span>,</span>
 <span>    y <span class="op">=</span> <span class="st">"Mean speed (km/h)"</span>,</span>
 <span>    colour <span class="op">=</span> <span class="st">"Vehicle type"</span></span>

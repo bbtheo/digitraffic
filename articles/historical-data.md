@@ -80,6 +80,7 @@ The result has 17 columns:
 | `time_in_loop_ms` | int | Time spent over the detection loop (ms) |
 | `datetime` | POSIXct | Full timestamp (Europe/Helsinki timezone) |
 | `vehicle_class_label` | chr | English label for the vehicle class |
+| `vehicle_class_category` | chr | Broad category: `"Car"`, `"Truck"`, `"Bus"`, `"Motorcycle"` |
 
 ## Understanding vehicle classes
 
@@ -90,9 +91,9 @@ available via
 ``` r
 
 dt_vehicle_classes()
-#> # A tibble: 9 x 3
-#>   vehicle_class label_en                   label_fi
-#>           <int> <chr>                      <chr>
+#> # A tibble: 9 x 5
+#>   vehicle_class label_en                   label_fi  category_en category_fi
+#>           <int> <chr>                      <chr>     <chr>       <chr>
 #> 1             1 Car / van                  ...
 #> 2             2 Truck (no trailer)         ...
 #> 3             3 Bus                        ...
@@ -195,7 +196,7 @@ raw |>
 
 raw |>
   filter(quality_flag == 0) |>
-  mutate(type = if_else(vehicle_class == 1, "Passenger", "Heavy")) |>
+  mutate(type = if_else(vehicle_class_category == "Car", "Car", "Heavy")) |>
   group_by(hour, type) |>
   summarise(mean_speed = mean(speed_kmh), .groups = "drop") |>
   ggplot(aes(x = hour, y = mean_speed, colour = type)) +
@@ -203,7 +204,7 @@ raw |>
   geom_point(size = 2) +
   scale_x_continuous(breaks = 0:23) +
   labs(
-    title = "Average speed by hour: passenger vs heavy vehicles",
+    title = "Average speed by hour: cars vs heavy vehicles",
     x = "Hour of day",
     y = "Mean speed (km/h)",
     colour = "Vehicle type"

@@ -11,7 +11,7 @@ of dt_history_raw()."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">digitraffic</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9005</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9006</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,24 +60,32 @@ of <code><a href="dt_history_raw.html">dt_history_raw()</a></code>.</p>
 <dt>label_fi</dt>
 <dd><p>Character. Finnish label (UTF-8).</p></dd>
 
+<dt>category_en</dt>
+<dd><p>Character. Broad vehicle category in English:
+<code>"Car"</code> (classes 1, 6, 7), <code>"Truck"</code> (classes 2, 4, 5, 9),
+<code>"Bus"</code> (class 3), <code>"Motorcycle"</code> (class 8).</p></dd>
+
+<dt>category_fi</dt>
+<dd><p>Character. Broad vehicle category in Finnish (UTF-8).</p></dd>
+
 
 </dl></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">dt_vehicle_classes</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 9 × 3</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vehicle_class label_en                  label_fi                            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>             1 Car / van                 Henkilö- tai pakettiauto            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>             2 Truck (no trailer)        Kuorma-auto ilman perävaunua        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>             3 Bus                       Linja-auto                          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>             4 Truck + semitrailer       Kuorma-auto ja puoliperävaunu       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>             5 Truck + full trailer      Kuorma-auto ja täysperävaunu        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>             6 Car + trailer             Henkilöauto ja peräkärry            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">7</span>             7 Car + caravan / motorhome Henkilöauto ja asuntovaunu tai -auto</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">8</span>             8 Motorcycle / moped        Moottoripyörä tai mopo              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">9</span>             9 High Capacity Truck       HCT-ajoneuvoyhdistelmä              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 9 × 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vehicle_class label_en                  label_fi       category_en category_fi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>             1 Car / van                 Henkilö- tai … Car         Henkilöauto</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>             2 Truck (no trailer)        Kuorma-auto i… Truck       Kuorma-auto</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>             3 Bus                       Linja-auto     Bus         Linja-auto </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>             4 Truck + semitrailer       Kuorma-auto j… Truck       Kuorma-auto</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>             5 Truck + full trailer      Kuorma-auto j… Truck       Kuorma-auto</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>             6 Car + trailer             Henkilöauto j… Car         Henkilöauto</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">7</span>             7 Car + caravan / motorhome Henkilöauto j… Car         Henkilöauto</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">8</span>             8 Motorcycle / moped        Moottoripyörä… Motorcycle  Moottoripy…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">9</span>             9 High Capacity Truck       HCT-ajoneuvoy… Truck       Kuorma-auto</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

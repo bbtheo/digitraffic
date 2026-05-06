@@ -89,6 +89,10 @@ A tibble with one row per vehicle passage and columns:
 
   Character. English label for the vehicle class.
 
+- vehicle_class_category:
+
+  Character. Broad category: "Car", "Truck", "Bus", or "Motorcycle".
+
 ## Examples
 
 ``` r
