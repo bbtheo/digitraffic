@@ -1,5 +1,5 @@
 Package: digitraffic
-Title: R Client for the Finntraffic Digitraffic TMS (LAM) API
+Title: R Client for the Finntraffic Digitraffic API
 Version: 0.0.0.9006
 Authors@R:
     person("Theo", "Blauberg", 
