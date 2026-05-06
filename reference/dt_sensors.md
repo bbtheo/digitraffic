@@ -2,7 +2,7 @@
 
 Fetches the catalogue of sensor types used across all LAM stations. Each
 sensor has a unique id that matches the `sensor_id` column returned by
-[`dt_station_data()`](https://theo-maon.github.io/digitraffic/reference/dt_station_data.md).
+[`dt_station_data()`](https://bbtheo.github.io/digitraffic/reference/dt_station_data.md).
 
 ## Usage
 

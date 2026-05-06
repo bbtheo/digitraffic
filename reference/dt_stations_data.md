@@ -13,7 +13,7 @@ dt_stations_data()
 ## Value
 
 A tibble with the same columns as
-[`dt_station_data()`](https://theo-maon.github.io/digitraffic/reference/dt_station_data.md),
+[`dt_station_data()`](https://bbtheo.github.io/digitraffic/reference/dt_station_data.md),
 with one row per sensor per station.
 
 ## Examples

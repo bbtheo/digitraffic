@@ -11,9 +11,9 @@ tidy tibbles ready for analysis.
 
 Useful links:
 
-- <https://github.com/theo-maon/digitraffic>
+- <https://github.com/bbtheo/digitraffic>
 
-- Report bugs at <https://github.com/theo-maon/digitraffic/issues>
+- Report bugs at <https://github.com/bbtheo/digitraffic/issues>
 
 ## Author
 

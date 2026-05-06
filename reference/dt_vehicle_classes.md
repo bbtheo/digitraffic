@@ -3,7 +3,7 @@
 Returns the lookup table mapping integer vehicle class codes (1-7) to
 their English and Finnish labels, as used in the `vehicle_class` column
 of
-[`dt_history_raw()`](https://theo-maon.github.io/digitraffic/reference/dt_history_raw.md).
+[`dt_history_raw()`](https://bbtheo.github.io/digitraffic/reference/dt_history_raw.md).
 
 ## Usage
 

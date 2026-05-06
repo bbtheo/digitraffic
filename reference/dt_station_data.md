@@ -14,7 +14,7 @@ dt_station_data(id)
 - id:
 
   A single positive integer: the station's `id` (not `tms_number`). Use
-  [`dt_stations()`](https://theo-maon.github.io/digitraffic/reference/dt_stations.md)
+  [`dt_stations()`](https://bbtheo.github.io/digitraffic/reference/dt_stations.md)
   to look up station ids.
 
 ## Value
@@ -36,7 +36,7 @@ A tibble with one row per sensor reading and columns:
 - sensor_id:
 
   Integer. Sensor identifier (see
-  [`dt_sensors()`](https://theo-maon.github.io/digitraffic/reference/dt_sensors.md)).
+  [`dt_sensors()`](https://bbtheo.github.io/digitraffic/reference/dt_sensors.md)).
 
 - name:
 

@@ -17,10 +17,10 @@ dt_history_raw(tms_number, date)
 
   A single positive integer: the station's `tms_number` (not the `id`).
   Use
-  [`dt_stations()`](https://theo-maon.github.io/digitraffic/reference/dt_stations.md)
+  [`dt_stations()`](https://bbtheo.github.io/digitraffic/reference/dt_stations.md)
   and read the `tms_number` column. This is different from the `id` used
   by
-  [`dt_station_data()`](https://theo-maon.github.io/digitraffic/reference/dt_station_data.md).
+  [`dt_station_data()`](https://bbtheo.github.io/digitraffic/reference/dt_station_data.md).
 
 - date:
 
@@ -63,7 +63,7 @@ A tibble with one row per vehicle passage and columns:
 - vehicle_class:
 
   Integer. Class code 1–7 (see
-  [`dt_vehicle_classes()`](https://theo-maon.github.io/digitraffic/reference/dt_vehicle_classes.md)).
+  [`dt_vehicle_classes()`](https://bbtheo.github.io/digitraffic/reference/dt_vehicle_classes.md)).
 
 - speed_kmh:
 

@@ -1,0 +1,318 @@
+# Filtering and discovering stations
+
+## Overview
+
+Finland’s LAM network has over 500 measurement stations spread across
+the road network.
+[`dt_stations()`](https://bbtheo.github.io/digitraffic/reference/dt_stations.md)
+supports five complementary filter parameters so you can narrow down to
+exactly the stations you need without writing manual
+[`dplyr::filter()`](https://dplyr.tidyverse.org/reference/filter.html)
+calls.
+
+| Parameter | Filters by | Data source | Extra API calls? |
+|----|----|----|----|
+| `name` | Station name (regex) | Bulk endpoint | None |
+| `road_number` | Road number (e.g. 7 for vt7) | Parsed from name | None |
+| `bbox` | Geographic bounding box | Bulk coordinates | None |
+| `municipality` | Municipality name | Detailed cache | None |
+| `province` | Province name | Detailed cache | None |
+
+All filters are combinable and applied in the order listed above.
+
+``` r
+
+library(digitraffic)
+library(dplyr)
+```
+
+## Filter by name
+
+The simplest filter — a case-insensitive regular expression matched
+against the station name string. Station names encode road type, road
+number, and location, e.g. `"vt1_Espoo_Hirvisuo"`:
+
+``` r
+
+# Stations whose name contains "Espoo" (case-insensitive)
+dt_stations(name = "Espoo")
+
+# Exact road prefix — valtatie 1 only
+dt_stations(name = "^vt1_")
+
+# All kantatie stations
+dt_stations(name = "^kt")
+
+# Helsinki or Espoo in the name
+dt_stations(name = "Helsinki|Espoo")
+```
+
+## Filter by road number
+
+`road_number` extracts the integer road number from the station name
+string — no extra API calls required. The naming convention covers all
+Finnish road types:
+
+| Name prefix | Road type                | Example             |
+|-------------|--------------------------|---------------------|
+| `vt`        | Valtatie (national road) | `vt7_Rita` → 7      |
+| `kt`        | Kantatie (primary road)  | `kt51_Keha` → 51    |
+| `st`        | Seututie (regional road) | `st140_Sipoo` → 140 |
+| `mt`        | Maantie (local road)     | `mt120_Muu` → 120   |
+
+``` r
+
+# All stations on valtatie 7 (Helsinki–Russian border)
+dt_stations(road_number = 7)
+
+# All stations on the Ring Road III (kt50)
+dt_stations(road_number = 50)
+
+# Stations on roads 1 through 5
+lapply(1:5, \(rn) dt_stations(road_number = rn)) |>
+  dplyr::bind_rows()
+```
+
+Stations whose names don’t follow the standard convention return `NA`
+for the parsed road number and are silently excluded from `road_number`
+filter results.
+
+## Filter by bounding box
+
+Pass a length-4 numeric vector `c(lon_min, lat_min, lon_max, lat_max)`
+in WGS-84 degrees. Works on the bulk coordinates already returned by
+[`dt_stations()`](https://bbtheo.github.io/digitraffic/reference/dt_stations.md)
+— no extra API calls:
+
+``` r
+
+# Helsinki metropolitan area
+dt_stations(bbox = c(24.5, 60.1, 25.2, 60.4))
+
+# Greater Tampere region
+dt_stations(bbox = c(23.4, 61.3, 24.1, 61.7))
+
+# Entire southern Finland
+dt_stations(bbox = c(22.0, 59.8, 27.0, 61.5))
+```
+
+You can combine `bbox` with `road_number` to find stations on a specific
+road within a geographic area:
+
+``` r
+
+# valtatie 4 stations south of Lahti
+dt_stations(road_number = 4, bbox = c(25.5, 60.9, 26.5, 61.2))
+```
+
+### Getting coordinates for a bbox
+
+If you have the `sf` package, you can compute a bounding box from a
+polygon:
+
+``` r
+
+library(sf)
+
+# Example: use a municipality polygon to build a bbox
+# espoo_polygon <- ... (loaded from a shapefile or administrative boundary API)
+# bb <- st_bbox(espoo_polygon)
+# dt_stations(bbox = c(bb["xmin"], bb["ymin"], bb["xmax"], bb["ymax"]))
+```
+
+## Filter by municipality or province
+
+These filters use **detailed station metadata** — 32 fields per station
+including municipality, province, road address, and multilingual names.
+This data is served from a cache so no API calls are made at filter
+time.
+
+``` r
+
+# All stations in Espoo
+dt_stations(municipality = "Espoo")
+
+# Stations in Tampere (case-insensitive)
+dt_stations(municipality = "tampere")
+
+# All stations in Helsinki or Espoo (regex)
+dt_stations(municipality = "Helsinki|Espoo")
+```
+
+``` r
+
+# All stations in Pirkanmaa province
+dt_stations(province = "Pirkanmaa")
+
+# Stations in either of two provinces
+dt_stations(province = "Uusimaa|Pirkanmaa")
+```
+
+Combine with other filters freely:
+
+``` r
+
+# valtatie 3 stations in Pirkanmaa
+dt_stations(road_number = 3, province = "Pirkanmaa")
+
+# Stations in Espoo within a tight bounding box
+dt_stations(municipality = "Espoo", bbox = c(24.5, 60.1, 25.0, 60.4))
+```
+
+## The detailed station cache
+
+Municipality and province filtering relies on a **detailed metadata
+cache** that holds 32 fields per station (vs. the 10 fields from the
+bulk endpoint).
+
+### What the cache contains
+
+The cache is built by fetching the individual station endpoint
+(`/api/tms/v1/stations/{id}`) for every station. It includes:
+
+- `municipality` / `municipality_code`
+- `province` / `province_code`
+- `road_number` / `road_section` / `distance_from_section_start`
+- `direction1_municipality` / `direction2_municipality`
+- `free_flow_speed1` / `free_flow_speed2`
+- `name_fi` / `name_sv` / `name_en`
+- and more — see
+  [`?dt_station`](https://bbtheo.github.io/digitraffic/reference/dt_station.md)
+  for the full list
+
+### Two-tier cache system
+
+    Priority 1 (user disk):  tools::R_user_dir("digitraffic", "cache")/stations_detailed.rds
+                                      |
+                             (falls back if not present)
+                                      |
+    Priority 2 (bundled):    R/sysdata.rda  (baked into the package at build time)
+
+The bundled snapshot is always present —
+`dt_stations(municipality = "Espoo")` works immediately after installing
+the package, with no setup required.
+
+### Integrity check
+
+Each time you use a detail-based filter, the package compares the cached
+station IDs against the current live station list from
+[`dt_stations()`](https://bbtheo.github.io/digitraffic/reference/dt_stations.md).
+If they differ (new stations added, old ones decommissioned), you’ll
+see:
+
+    Warning: Detailed station cache is out of date: 3 new stations detected.
+    i Run `dt_stations_load_details()` to refresh.
+
+Your filter still runs — it just uses the slightly stale cache.
+
+### Refreshing the cache
+
+When the network has changed, run:
+
+``` r
+
+dt_stations_load_details()
+#> Fetching detailed metadata for 521 stations...
+#> [working] ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
+#> v Saved detailed metadata for 521 stations.
+#> i Cache location: ~/.cache/R/digitraffic/stations_detailed.rds
+```
+
+This uses
+[`httr2::req_perform_parallel()`](https://httr2.r-lib.org/reference/req_perform_parallel.html)
+with 10 concurrent connections. On a typical connection it completes in
+under 15 seconds. The result is saved to your personal cache directory
+and persists across R sessions.
+
+To control the concurrency:
+
+``` r
+
+# More aggressive (faster on a fast connection)
+dt_stations_load_details(max_active = 20)
+
+# More conservative (politer to the API)
+dt_stations_load_details(max_active = 5)
+```
+
+## Using filtered results with sensor data
+
+A common pattern: filter stations first, then fetch sensor data for
+each:
+
+``` r
+
+# Get all stations in Uusimaa
+uusimaa <- dt_stations(province = "Uusimaa")
+
+# Fetch real-time data for the first 5
+sensor_data <- lapply(head(uusimaa$id, 5), dt_station_data) |>
+  dplyr::bind_rows()
+
+# Average speed in each direction
+sensor_data |>
+  filter(grepl("KESKINOPEUS_60MIN.*SUUNTA", name)) |>
+  group_by(name) |>
+  summarise(mean_speed = mean(value, na.rm = TRUE))
+```
+
+## Mapping filtered stations
+
+Combine filtering with `sf` for spatial analysis and mapping:
+
+``` r
+
+library(sf)
+library(ggplot2)
+
+# Stations in Pirkanmaa projected to Finnish TM35FIN (EPSG 3067)
+pirkanmaa_sf <- dt_stations(province = "Pirkanmaa") |>
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>
+  st_transform(3067)
+
+# Plot with ggplot2
+ggplot(pirkanmaa_sf) +
+  geom_sf(aes(colour = collection_status), size = 2) +
+  scale_colour_manual(values = c(
+    "GATHERING"           = "#2166ac",
+    "REMOVED_TEMPORARILY" = "#d73027"
+  )) +
+  labs(
+    title  = "LAM stations in Pirkanmaa",
+    colour = "Status"
+  ) +
+  theme_minimal()
+```
+
+## Summary of filter behaviour
+
+``` r
+
+# Quick reference — all these are equivalent to chaining dplyr::filter() calls
+# but done in a single function with no repeated API calls
+
+dt_stations()                                    # all 500+ stations
+dt_stations(name = "^vt1_")                      # name regex
+dt_stations(road_number = 1)                     # road number from name
+dt_stations(bbox = c(24.5, 60.1, 25.2, 60.4))   # bounding box
+dt_stations(municipality = "Espoo")              # municipality (cache)
+dt_stations(province = "Uusimaa")                # province (cache)
+
+# Combined — all filters applied in sequence
+dt_stations(
+  road_number  = 1,
+  province     = "Uusimaa",
+  bbox         = c(24.5, 60.1, 25.2, 60.4)
+)
+```
+
+## See also
+
+- [`dt_station()`](https://bbtheo.github.io/digitraffic/reference/dt_station.md)
+  — detailed metadata for a single station (all 32 fields)
+- [`dt_stations_load_details()`](https://bbtheo.github.io/digitraffic/reference/dt_stations_load_details.md)
+  — refresh the detailed metadata cache
+- [`vignette("digitraffic")`](https://bbtheo.github.io/digitraffic/articles/digitraffic.md)
+  — getting started with real-time sensor data
+- [`vignette("historical-data")`](https://bbtheo.github.io/digitraffic/articles/historical-data.md)
+  — historical per-vehicle analysis

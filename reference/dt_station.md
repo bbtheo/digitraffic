@@ -2,7 +2,7 @@
 
 Fetches extended metadata for one station by its internal API `id`. To
 look up the id first, use
-[`dt_stations()`](https://theo-maon.github.io/digitraffic/reference/dt_stations.md).
+[`dt_stations()`](https://bbtheo.github.io/digitraffic/reference/dt_stations.md).
 
 ## Usage
 
@@ -15,10 +15,10 @@ dt_station(id)
 - id:
 
   A single positive integer: the station's `id` as returned by
-  [`dt_stations()`](https://theo-maon.github.io/digitraffic/reference/dt_stations.md).
+  [`dt_stations()`](https://bbtheo.github.io/digitraffic/reference/dt_stations.md).
   Note: this is **not** the same as `tms_number` (which is used for
   historical CSV downloads via
-  [`dt_history_raw()`](https://theo-maon.github.io/digitraffic/reference/dt_history_raw.md)).
+  [`dt_history_raw()`](https://bbtheo.github.io/digitraffic/reference/dt_history_raw.md)).
 
 ## Value
 

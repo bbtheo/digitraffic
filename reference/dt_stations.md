@@ -1,28 +1,53 @@
 # List all LAM/TMS measurement stations
 
 Fetches metadata for all automatic traffic measurement (LAM/TMS)
-stations from the Digitraffic API. Results are cached for 5 minutes
-within the current R session; call
-[`dt_cache_clear()`](https://theo-maon.github.io/digitraffic/reference/dt_cache_clear.md)
-to force a fresh fetch.
+stations from the Digitraffic API. Basic results (name, coordinates,
+status) are cached for 5 minutes per R session.
 
 ## Usage
 
 ``` r
-dt_stations(name = NULL)
+dt_stations(
+  name = NULL,
+  road_number = NULL,
+  municipality = NULL,
+  province = NULL,
+  bbox = NULL
+)
 ```
 
 ## Arguments
 
 - name:
 
-  `NULL` (default) or a character string used as a case-insensitive
-  regular expression to filter stations by name. Station names typically
-  encode the road and location, e.g. `"vt1_Espoo_Hirvisuo"`.
+  `NULL` or a case-insensitive regular expression matched against
+  station names, e.g. `"Espoo"` or `"^vt1_"`.
+
+- road_number:
+
+  `NULL` or a positive integer road number, e.g. `7` for valtatie 7.
+  Parsed from the station name — fast, no extra API calls.
+
+- municipality:
+
+  `NULL` or a character string matched case-insensitively against the
+  municipality name, e.g. `"Espoo"`. Requires the detailed station
+  cache.
+
+- province:
+
+  `NULL` or a character string matched case-insensitively against the
+  province name, e.g. `"Uusimaa"`. Requires the detailed station cache.
+
+- bbox:
+
+  `NULL` or a length-4 numeric vector
+  `c(lon_min, lat_min, lon_max, lat_max)` in WGS-84 degrees. Filters
+  stations whose coordinates fall inside the bounding box.
 
 ## Value
 
-A tibble with one row per station and columns:
+A tibble with one row per matching station and columns:
 
 - id:
 
@@ -50,7 +75,7 @@ A tibble with one row per station and columns:
 
 - bearing:
 
-  Integer. Road bearing in degrees (0–360).
+  Integer. Road bearing in degrees (0-360).
 
 - collection_status:
 
@@ -64,6 +89,16 @@ A tibble with one row per station and columns:
 
   POSIXct (UTC). Time the record was last updated.
 
+## Details
+
+Filtering by `road_number`, `municipality`, `province`, or `bbox`
+requires extended station metadata. This is served from a bundled
+snapshot baked into the package, or from a user-refreshed disk cache
+(`tools::R_user_dir("digitraffic", "cache")`). If the network list of
+stations has changed since the cache was built, a warning is emitted
+with instructions to call
+[`dt_stations_load_details()`](https://bbtheo.github.io/digitraffic/reference/dt_stations_load_details.md).
+
 ## Examples
 
 ``` r
@@ -71,10 +106,23 @@ if (FALSE) { # \dontrun{
 # All stations
 dt_stations()
 
-# Stations whose name contains "Espoo"
+# By name (regex supported)
 dt_stations(name = "Espoo")
-
-# Stations on valtatie 1 (road E18)
 dt_stations(name = "^vt1_")
+
+# By road number
+dt_stations(road_number = 7)
+
+# By municipality
+dt_stations(municipality = "Espoo")
+
+# By province
+dt_stations(province = "Uusimaa")
+
+# By bounding box (Helsinki metropolitan area)
+dt_stations(bbox = c(24.5, 60.1, 25.2, 60.4))
+
+# Combine filters
+dt_stations(road_number = 1, municipality = "Espoo")
 } # }
 ```

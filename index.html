@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">digitraffic</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9004</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,6 +31,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="articles/digitraffic.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="articles/index.html">Articles</a></li>
       </ul>
@@ -38,7 +39,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/theo-maon/digitraffic/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/bbtheo/digitraffic/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -47,14 +48,213 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="digitraffic">digitraffic<a class="anchor" aria-label="anchor" href="#digitraffic"></a>
+<div class="page-header"><h1 id="digitraffic-">digitraffic <img src="reference/figures/logo.png" align="right" height="139" alt=""><a class="anchor" aria-label="anchor" href="#digitraffic-"></a>
 </h1></div>
+<!-- badges: start -->
+
+<p><strong>digitraffic</strong> is an R client for the <a href="https://www.digitraffic.fi/" class="external-link">Finntraffic Digitraffic</a> open API, giving you tidy access to Finland’s automatic traffic measurement (LAM/TMS) network — over 450 road stations measuring vehicle speeds, volumes, and classifications in real time.</p>
+<p>All data is returned as <a href="https://tibble.tidyverse.org/" class="external-link">tibbles</a> with snake_case column names, ready for analysis with dplyr, ggplot2, and the rest of the tidyverse.</p>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<p>Install the development version from GitHub:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"bbtheo/digitraffic"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
+</h2>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/bbtheo/digitraffic" class="external-link">digitraffic</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># List all measurement stations — road_number, municipality, province always included</span></span>
+<span><span class="fu"><a href="reference/dt_stations.html">dt_stations</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 489 x 13</span></span>
+<span><span class="co">#&gt;       id tms_number name               road_number longitude latitude elevation</span></span>
+<span><span class="co">#&gt;    &lt;int&gt;      &lt;int&gt; &lt;chr&gt;                    &lt;int&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt;  1 20002      20002 vt1_Espoo_Hirvisuo           1      24.6     60.2        30</span></span>
+<span><span class="co">#&gt;  2 23001          1 vt7_Rita                     7      25.7     60.4         0</span></span>
+<span><span class="co">#&gt;  # … with 6 more variables: bearing &lt;int&gt;, municipality &lt;chr&gt;, province &lt;chr&gt;,</span></span>
+<span><span class="co">#&gt;  #   collection_status &lt;chr&gt;, state &lt;chr&gt;, data_updated_time &lt;dttm&gt;</span></span>
+<span></span>
+<span><span class="co"># Search by name (supports regex)</span></span>
+<span><span class="fu"><a href="reference/dt_stations.html">dt_stations</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Espoo"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Detailed metadata for one station</span></span>
+<span><span class="fu"><a href="reference/dt_station.html">dt_station</a></span><span class="op">(</span><span class="fl">23001</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 1 x 32</span></span>
+<span><span class="co">#&gt;      id tms_number name     municipality province road_number free_flow_speed1</span></span>
+<span><span class="co">#&gt;   &lt;int&gt;      &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;        &lt;chr&gt;          &lt;int&gt;            &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 23001          1 vt7_Rita Porvoo       Uusimaa            7              105</span></span>
+<span></span>
+<span><span class="co"># Real-time speed and volume data</span></span>
+<span><span class="fu"><a href="reference/dt_station_data.html">dt_station_data</a></span><span class="op">(</span><span class="fl">23001</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 40 x 11</span></span>
+<span><span class="co">#&gt;    station_id sensor_id name                            value unit  measured_time</span></span>
+<span><span class="co">#&gt;         &lt;int&gt;     &lt;int&gt; &lt;chr&gt;                           &lt;dbl&gt; &lt;chr&gt; &lt;dttm&gt;</span></span>
+<span><span class="co">#&gt;  1      23001      5016 OHITUKSET_5MIN_KIINTEA_SUUNTA1   216 kpl/h 2024-06-01 12:00:00</span></span>
+<span><span class="co">#&gt;  2      23001      5057 KESKINOPEUS_60MIN_KIINTEA_SU…    107 km/h  2024-06-01 12:00:00</span></span>
+<span><span class="co">#&gt;  …</span></span>
+<span></span>
+<span><span class="co"># Historical per-vehicle data (one station, one day)</span></span>
+<span><span class="va">raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/dt_history_raw.html">dt_history_raw</a></span><span class="op">(</span>tms_number <span class="op">=</span> <span class="fl">1</span>, date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2024-03-15"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 28,472 x 17</span></span>
+<span><span class="co">#&gt;    station_id speed_kmh vehicle_class_label datetime</span></span>
+<span><span class="co">#&gt;         &lt;int&gt;     &lt;int&gt; &lt;chr&gt;               &lt;dttm&gt;</span></span>
+<span><span class="co">#&gt;  1          1        97 Car / van           2024-03-15 08:00:12</span></span>
+<span><span class="co">#&gt;  2          1        84 Truck (no trailer)  2024-03-15 08:00:15</span></span>
+<span><span class="co">#&gt;  …</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="main-functions">Main functions<a class="anchor" aria-label="anchor" href="#main-functions"></a>
+</h2>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr>
+<th>Function</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code><a href="reference/dt_stations.html">dt_stations()</a></code></td>
+<td>List stations — filter by name, road number, municipality, province, or bounding box</td>
+</tr>
+<tr>
+<td><code><a href="reference/dt_station.html">dt_station()</a></code></td>
+<td>Detailed metadata for one station (municipality, road, province, …)</td>
+</tr>
+<tr>
+<td><code><a href="reference/dt_stations_load_details.html">dt_stations_load_details()</a></code></td>
+<td>Refresh the detailed station metadata cache</td>
+</tr>
+<tr>
+<td><code><a href="reference/dt_station_data.html">dt_station_data()</a></code></td>
+<td>Real-time sensor values for one station</td>
+</tr>
+<tr>
+<td><code><a href="reference/dt_stations_data.html">dt_stations_data()</a></code></td>
+<td>Real-time sensor values for <strong>all</strong> stations</td>
+</tr>
+<tr>
+<td><code><a href="reference/dt_sensors.html">dt_sensors()</a></code></td>
+<td>Catalogue of all sensor types (76 sensors)</td>
+</tr>
+<tr>
+<td><code><a href="reference/dt_sensor_constants.html">dt_sensor_constants()</a></code></td>
+<td>Calibration values: free-flow speed, max capacity, road bearing</td>
+</tr>
+<tr>
+<td><code><a href="reference/dt_history_raw.html">dt_history_raw()</a></code></td>
+<td>Historical per-vehicle data (one station, one day)</td>
+</tr>
+<tr>
+<td><code><a href="reference/dt_vehicle_classes.html">dt_vehicle_classes()</a></code></td>
+<td>Vehicle class code lookup (1–7 → English/Finnish labels)</td>
+</tr>
+<tr>
+<td><code><a href="reference/dt_cache_clear.html">dt_cache_clear()</a></code></td>
+<td>Clear the in-session metadata cache</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level2">
+<h2 id="filtering-stations">Filtering stations<a class="anchor" aria-label="anchor" href="#filtering-stations"></a>
+</h2>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># By road number (no extra API calls)</span></span>
+<span><span class="fu"><a href="reference/dt_stations.html">dt_stations</a></span><span class="op">(</span>road_number <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># By municipality or province (uses bundled metadata cache)</span></span>
+<span><span class="fu"><a href="reference/dt_stations.html">dt_stations</a></span><span class="op">(</span>municipality <span class="op">=</span> <span class="st">"Espoo"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/dt_stations.html">dt_stations</a></span><span class="op">(</span>province <span class="op">=</span> <span class="st">"Uusimaa"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># By bounding box</span></span>
+<span><span class="fu"><a href="reference/dt_stations.html">dt_stations</a></span><span class="op">(</span>bbox <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">24.5</span>, <span class="fl">60.1</span>, <span class="fl">25.2</span>, <span class="fl">60.4</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Combine freely</span></span>
+<span><span class="fu"><a href="reference/dt_stations.html">dt_stations</a></span><span class="op">(</span>road_number <span class="op">=</span> <span class="fl">4</span>, province <span class="op">=</span> <span class="st">"Pirkanmaa"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Refresh the metadata cache when new stations are added</span></span>
+<span><span class="fu"><a href="reference/dt_stations_load_details.html">dt_stations_load_details</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="common-recipes">Common recipes<a class="anchor" aria-label="anchor" href="#common-recipes"></a>
+</h2>
+<div class="section level3">
+<h3 id="hourly-traffic-volume">Hourly traffic volume<a class="anchor" aria-label="anchor" href="#hourly-traffic-volume"></a>
+</h3>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/dt_history_raw.html">dt_history_raw</a></span><span class="op">(</span>tms_number <span class="op">=</span> <span class="fl">1</span>, date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2024-06-15"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">quality_flag</span> <span class="op">==</span> <span class="fl">0</span>, <span class="va">direction</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">hour</span>, name <span class="op">=</span> <span class="st">"vehicles"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">24</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="average-speed-across-all-stations">Average speed across all stations<a class="anchor" aria-label="anchor" href="#average-speed-across-all-stations"></a>
+</h3>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/dt_stations_data.html">dt_stations_data</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"KESKINOPEUS_60MIN.*SUUNTA1"</span>, <span class="va">name</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>mean_speed_kmh <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">value</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="free-flow-speed-comparison">Free-flow speed comparison<a class="anchor" aria-label="anchor" href="#free-flow-speed-comparison"></a>
+</h3>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/dt_sensor_constants.html">dt_sensor_constants</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name</span> <span class="op">==</span> <span class="st">"VVAPAAS1"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="convert-stations-to-sf-for-mapping">Convert stations to sf for mapping<a class="anchor" aria-label="anchor" href="#convert-stations-to-sf-for-mapping"></a>
+</h3>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
+<span><span class="va">stations</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/dt_stations.html">dt_stations</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span>coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"longitude"</span>, <span class="st">"latitude"</span><span class="op">)</span>, crs <span class="op">=</span> <span class="fl">4326</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="api-details">API details<a class="anchor" aria-label="anchor" href="#api-details"></a>
+</h2>
+<ul>
+<li>
+<strong>Base URL:</strong> <code>https://tie.digitraffic.fi</code>
+</li>
+<li>
+<strong>Authentication:</strong> None required (open data)</li>
+<li>
+<strong>Rate limiting:</strong> The package throttles to 60 requests/minute (Digitraffic’s default limit) and retries transient errors (429, 500, 503) automatically</li>
+<li>
+<strong>Caching:</strong> Station metadata is cached for 5 minutes per R session; call <code><a href="reference/dt_cache_clear.html">dt_cache_clear()</a></code> to refresh</li>
+<li>
+<strong>Historical data:</strong> Available from December 2021 onwards; published the next day at 08:00–09:00 EET</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="data-source">Data source<a class="anchor" aria-label="anchor" href="#data-source"></a>
+</h2>
+<p>All data is provided by <a href="https://www.digitraffic.fi/" class="external-link">Finntraffic / Digitraffic</a> under the <a href="https://creativecommons.org/licenses/by/4.0/" class="external-link">Creative Commons Attribution 4.0</a> licence.</p>
+</div>
+<div class="section level2">
+<h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
+</h2>
+<p>MIT</p>
+</div>
 </div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/theo-maon/digitraffic/" class="external-link">Browse source code</a></li>
-<li><a href="https://github.com/theo-maon/digitraffic/issues" class="external-link">Report a bug</a></li>
+<li><a href="https://github.com/bbtheo/digitraffic/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/bbtheo/digitraffic/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
 
@@ -81,7 +281,13 @@
 </ul>
 </div>
 
-
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/bbtheo/digitraffic/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/bbtheo/digitraffic/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://app.codecov.io/gh/bbtheo/digitraffic" class="external-link"><img src="https://codecov.io/gh/bbtheo/digitraffic/graph/badge.svg" alt="Codecov test coverage"></a></li>
+</ul>
+</div>
 
   </aside>
 </div>
