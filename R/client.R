@@ -6,12 +6,15 @@
 
 # Build the base httr2 request with shared settings:
 #   - User-Agent identifying the package + version
-#   - Timeout controlled by getOption("digitraffic.timeout", 120): 30 s is
-#     fine for small JSON endpoints but multi-MB CSV files need more headroom.
-#   - Retry up to 5 times on transient failures (429, 500, 503) AND on
-#     network-level errors (timeouts, connection resets — httr2_failure),
-#     with Retry-After header support for 429 and exponential back-off otherwise
-#   - Throttle to 10 requests per minute to be a polite API client
+#   - Timeout: getOption("digitraffic.timeout", 120) seconds. CSV files can be
+#     several MB and the server is slow under load; 120 s gives enough headroom.
+#   - Retry up to 5 times on transient HTTP failures (429, 500, 503) AND on
+#     network-level errors (timeouts, connection resets — retry_on_failure).
+#     For 429 we respect the Retry-After header and fall back to 10 s;
+#     for other transient errors httr2 uses its default exponential back-off.
+#   - No client-side throttle: each mirai daemon is a separate process with its
+#     own rate state, so a per-process throttle adds unnecessary latency. The
+#     API's own 429 responses govern the real rate limit.
 dt_base_request <- function() {
   ua <- paste0(
     "digitraffic-r/", utils::packageVersion("digitraffic"),
@@ -21,21 +24,17 @@ dt_base_request <- function() {
     httr2::req_user_agent(ua) |>
     httr2::req_timeout(getOption("digitraffic.timeout", 120)) |>
     httr2::req_retry(
-      max_tries          = 5,
-      retry_on_failure   = TRUE,
-      is_transient       = \(resp) httr2::resp_status(resp) %in% c(429L, 500L, 503L),
-      # For 429 respect the Retry-After header; fall back to 60 s.
-      # Returning NULL for other transient errors lets httr2 use its default
-      # exponential back-off.
+      max_tries        = 5,
+      retry_on_failure = TRUE,
+      is_transient     = \(resp) httr2::resp_status(resp) %in% c(429L, 500L, 503L),
       after = function(resp) {
         if (httr2::resp_status(resp) != 429L) return(NULL)
         ra <- suppressWarnings(
           as.numeric(httr2::resp_header(resp, "retry-after"))
         )
-        if (length(ra) == 1L && !is.na(ra) && ra > 0) ra else 60
+        if (length(ra) == 1L && !is.na(ra) && ra > 0) ra else 10
       }
-    ) |>
-    httr2::req_throttle(rate = 10 / 60)
+    )
 }
 
 # Perform a request and translate HTTP errors into informative cli messages.
