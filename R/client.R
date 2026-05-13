@@ -12,9 +12,9 @@
 #     network-level errors (timeouts, connection resets — retry_on_failure).
 #     For 429 we respect the Retry-After header and fall back to 10 s;
 #     for other transient errors httr2 uses its default exponential back-off.
-#   - No client-side throttle: each mirai daemon is a separate process with its
-#     own rate state, so a per-process throttle adds unnecessary latency. The
-#     API's own 429 responses govern the real rate limit.
+#   - Throttle to 20 req/min per process. Each mirai daemon is a separate
+#     process so total rate = N_DAEMONS × 20. At 5 daemons = 100 req/min total,
+#     which stays under the API's rate limit and avoids 429 storms.
 dt_base_request <- function() {
   ua <- paste0(
     "digitraffic-r/", utils::packageVersion("digitraffic"),
@@ -34,7 +34,8 @@ dt_base_request <- function() {
         )
         if (length(ra) == 1L && !is.na(ra) && ra > 0) ra else 10
       }
-    )
+    ) |>
+    httr2::req_throttle(rate = 20 / 60)
 }
 
 # Perform a request and translate HTTP errors into informative cli messages.
