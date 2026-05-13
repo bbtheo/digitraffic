@@ -163,6 +163,26 @@ All data is provided by [Finntraffic /
 Digitraffic](https://www.digitraffic.fi/) under the [Creative Commons
 Attribution 4.0](https://creativecommons.org/licenses/by/4.0/) licence.
 
+## Citation
+
+If you use digitraffic in your research, please cite it:
+
+    Blauberg T (2026). _digitraffic: R Client for the Finntraffic Digitraffic
+    API_. R package version 0.0.0.9009,
+    <https://github.com/bbtheo/digitraffic>.
+
+BibTeX entry:
+
+``` bibtex
+@Manual{,
+  title = {digitraffic: R Client for the Finntraffic Digitraffic API},
+  author = {Theo Blauberg},
+  year = {2026},
+  note = {R package version 0.0.0.9010},
+  url = {https://github.com/bbtheo/digitraffic},
+}
+```
+
 ## License
 
 MIT
